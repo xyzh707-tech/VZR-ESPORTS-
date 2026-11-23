@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VZR ESPORTS | History</title>
+<style>
+:root { --bg:#09090b; --panel:#14151c; --line:#292c36; --red:#ed2638; --text:#f5f5f7; --muted:#9ca3af; --green:#22c55e; --warn:#fbbf24; }
+* { box-sizing:border-box; margin:0; padding:0; font-family:'Segoe UI', sans-serif; }
+body { background:var(--bg); color:var(--text); padding-bottom:50px; }
+
+/* HEADER */
+.header { display:flex; align-items:center; justify-content:space-between; padding:15px 20px; background:var(--panel); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:10; }
+.header-left { display:flex; align-items:center; gap:15px; }
+.header h1 { font-size:20px; font-weight:800; letter-spacing:1px; }
+.back-btn { background:transparent; border:none; color:white; font-size:24px; cursor:pointer; padding:0 5px; }
+
+/* CONTAINER */
+.container { max-width:500px; margin:20px auto; padding:0 15px; display:flex; flex-direction:column; gap:20px; }
+
+/* TABS */
+.tabs { display:flex; gap:10px; margin-bottom:15px; overflow-x:auto; padding-bottom:5px; }
+.tabs::-webkit-scrollbar { display:none; }
+.tab-btn { background:var(--panel); border:1px solid var(--line); color:var(--muted); padding:10px 15px; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap; }
+.tab-btn.active { background:rgba(237,38,56,0.1); border-color:var(--red); color:var(--red); }
+
+/* HISTORY LIST */
+.hist-list { display:flex; flex-direction:column; gap:10px; }
+.hist-item { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:15px; border-left:4px solid var(--line); }
+.hist-item.deposit { border-left-color:var(--green); }
+.hist-item.withdraw { border-left-color:var(--red); }
+.hist-item.tournament { border-left-color:#a855f7; }
+
+.hist-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:5px; }
+.hist-title { font-size:15px; font-weight:800; color:#fff; }
+.hist-amount { font-size:15px; font-weight:800; }
+.hist-amount.plus { color:var(--green); }
+.hist-amount.minus { color:var(--red); }
+.hist-meta { font-size:11px; color:var(--muted); display:flex; justify-content:space-between; margin-top:5px; }
+.hist-status { font-size:10px; font-weight:700; padding:3px 6px; border-radius:4px; }
+.hist-status.pending { background:rgba(251,191,36,0.1); color:var(--warn); }
+.hist-status.approved, .hist-status.completed { background:rgba(34,197,94,0.1); color:var(--green); }
+.hist-status.rejected { background:rgba(237,38,56,0.1); color:var(--red); }
+
+.empty { text-align:center; padding:40px 20px; color:var(--muted); font-size:14px; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <button class="back-btn" onclick="window.location.href='lobby.html'">‹</button>
+    <h1>History</h1>
+  </div>
+</header>
+
+<div class="container">
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('all')">All</button>
+        <button class="tab-btn" onclick="switchTab('deposit')">Deposits</button>
+        <button class="tab-btn" onclick="switchTab('withdraw')">Withdrawals</button>
+        <button class="tab-btn" onclick="switchTab('tournament')">Tournaments</button>
+    </div>
+
+    <div class="hist-list" id="historyList">
+        <div class="empty">Loading...</div>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const firebaseConfig = { apiKey: "AIzaSyDPIjZjIyUdQBUEni3eaaAa3TWTAit_8y4", authDomain: "freefire-tournament-45058.firebaseapp.com", projectId: "freefire-tournament-45058", storageBucket: "freefire-tournament-45058.firebasestorage.app", messagingSenderId: "786635453008", appId: "1:786635453008:web:88ee24e0b02bf846619755" };
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+let currentUser = null;
+let allHistory = []; // Store combined history here
+let currentTab = 'all';
+
+onAuthStateChanged(auth, (user) => {
+    if(user) {
+        currentUser = user;
+        loadHistory();
+    } else {
+        window.location.href = "wallet.html";
+    }
+});
+
+function esc(v) { return String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+function loadHistory() {
+    // 1. Deposits
+    onSnapshot(query(collection(db, "deposit_requests"), where("userId", "==", currentUser.uid)), (snap) => {
+        const deps = snap.docs.map(d => ({
+            type: 'deposit',
+            title: 'Deposit',
+            amount: d.data().amount,
+            status: d.data().status,
+            date: d.data().createdAt?.toMillis() || Date.now(),
+            isPositive: true
+        }));
+        updateHistory('deposit', deps);
+    });
+
+    // 2. Withdrawals
+    onSnapshot(query(collection(db, "withdraw_requests"), where("userId", "==", currentUser.uid)), (snap) => {
+        const withs = snap.docs.map(d => ({
+            type: 'withdraw',
+            title: 'Withdrawal',
+            amount: d.data().amount,
+            status: d.data().status,
+            date: d.data().createdAt?.toMillis() || Date.now(),
+            isPositive: false
+        }));
+        updateHistory('withdraw', withs);
+    });
+
+    // 3. Tournaments
+    onSnapshot(collection(db, "tournaments"), (snap) => {
+        let tours = [];
+        snap.forEach(doc => {
+            const t = doc.data();
+            if(t.players) {
+                const myData = t.players.find(p => p.userId === currentUser.uid);
+                if(myData) {
+                    tours.push({
+                        type: 'tournament',
+                        title: t.title,
+                        amount: t.entryFee,
+                        status: 'completed',
+                        date: t.createdAt?.toMillis() || Date.now(),
+                        isPositive: false,
+                        extra: `Seat: ${myData.seat} | Kills: ${myData.kills || 0}`
+                    });
+                }
+            }
+        });
+        updateHistory('tournament', tours);
+    });
+}
+
+function updateHistory(type, data) {
+    // Remove old data of this type and add new
+    allHistory = allHistory.filter(h => h.type !== type);
+    allHistory = allHistory.concat(data);
+    
+    // Sort by date (newest first)
+    allHistory.sort((a,b) => b.date - a.date);
+    
+    renderHistory();
+}
+
+function renderHistory() {
+    const list = document.getElementById("historyList");
+    
+    let filtered = allHistory;
+    if(currentTab !== 'all') {
+        filtered = allHistory.filter(h => h.type === currentTab);
+    }
+
+    if(filtered.length === 0) {
+        list.innerHTML = '<div class="empty">No history found.</div>';
+        return;
+    }
+
+    list.innerHTML = filtered.map(h => {
+        let amountClass = h.isPositive ? 'plus' : 'minus';
+        let amountPrefix = h.isPositive ? '+' : '-';
+        
+        // Tournament fee is not really a positive/negative change, but we show it as negative
+        if(h.type === 'tournament') amountPrefix = 'Fee: ';
+
+        const dateStr = new Date(h.date).toLocaleDateString('en-IN', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+        
+        return `
+            <div class="hist-item ${h.type}">
+                <div class="hist-top">
+                    <div class="hist-title">${esc(h.title)}</div>
+                    <div class="hist-amount ${h.isPositive ? 'plus' : ''}">${amountPrefix}₹${h.amount || 0}</div>
+                </div>
+                <div class="hist-meta">
+                    <span>${dateStr}</span>
+                    <span class="hist-status ${h.status}">${h.status.toUpperCase()}</span>
+                </div>
+                ${h.extra ? `<div class="hist-meta" style="margin-top:5px; color:#fbbf24;">${esc(h.extra)}</div>` : ''}
+            </div>
+        `;
+    }).join("");
+}
+
+window.switchTab = (tab) => {
+    currentTab = tab;
+    document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+    event.target.classList.add("active");
+    renderHistory();
+};
+</script>
+</body>
+</html>

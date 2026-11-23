@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>VZR ESPORTS | Withdrawal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', sans-serif; user-select: none; }
+    
+    :root {
+        --bg: #09090b;
+        --panel: #14151c;
+        --line: #292c36;
+        --red: #ed2638;
+        --red-hover: #c91e2d;
+        --text: #f5f5f7;
+        --muted: #9ca3af;
+        --warn: #fbbf24;
+        --green: #22c55e;
+    }
+
+    body { 
+        background: var(--bg); color: var(--text); min-height: 100vh; 
+        display: flex; flex-direction: column; align-items: center; 
+        padding: 25px 15px 40px; position: relative; overflow-x: hidden;
+    }
+
+    /* Top Header */
+    .header { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 440px; margin-bottom: 20px; }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .back-btn { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; }
+    .brand-title { font-size: 18px; font-weight: 800; letter-spacing: 1px; }
+    .brand-title span { color: var(--red); }
+
+    /* Wallet Combined */
+    .wallet-combined {
+      background: var(--panel); border: 1px solid var(--line); color: white;
+      padding: 8px 10px 8px 15px; border-radius: 14px;
+      display: flex; align-items: center; gap: 8px; text-decoration: none;
+      font-size: 14px; font-weight: bold; cursor: pointer;
+    }
+    .wallet-combined:active { border-color: var(--red); }
+    .wallet-combined .coin { color:#fbbf24; }
+    .wallet-combined .divider { width:1px; height:16px; background:var(--line); }
+    .wallet-combined .plus-btn { font-size:18px; font-weight:bold; padding-right: 2px;}
+
+    /* Card */
+    .card {
+        background: var(--panel); border: 1px solid var(--line); width: 100%; max-width: 440px;
+        border-radius: 16px; padding: 20px; margin-bottom: 15px;
+    }
+    .card-title { font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; color: var(--muted); }
+
+    /* Available Balance */
+    .bal-box { background: rgba(237, 38, 56, 0.05); border: 1px solid rgba(237, 38, 56, 0.2); border-radius: 12px; padding: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    .bal-box .lbl { font-size: 12px; color: var(--muted); font-weight: 700; text-transform: uppercase; }
+    .bal-box .val { font-size: 22px; font-weight: 900; color: var(--red); }
+
+    /* Tabs (UPI / Bank) */
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab-btn { flex: 1; padding: 10px; background: transparent; border: 1px solid var(--line); color: var(--muted); border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.2s; }
+    .tab-btn.active { background: rgba(237, 38, 56, 0.1); border-color: var(--red); color: var(--red); }
+    
+    /* Inputs */
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 11px; color: var(--muted); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }
+    .input-box { position: relative; }
+    .form-control { width: 100%; background: #09090b; border: 1px solid var(--line); border-radius: 10px; padding: 14px; color: #fff; font-size: 14px; font-weight: 600; outline: none; transition: 0.2s; }
+    .form-control:focus { border-color: var(--red); }
+    .form-control:disabled { background: #0d0e13; color: var(--muted); border-color: transparent; }
+
+    /* Lock Message */
+    .locked-msg { display: none; background: rgba(34, 197, 94, 0.1); color: var(--green); padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 700; text-align: center; margin-bottom: 15px; }
+
+    /* Buttons */
+    .btn-main { width: 100%; padding: 15px; background: var(--red); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; margin-top: 10px; transition: 0.2s; }
+    .btn-main:active { background: var(--red-hover); }
+    .btn-main:disabled { background: #333; color: #777; cursor: not-allowed; }
+
+    /* Fee Summary */
+    .fee-summary { background: #09090b; border: 1px solid var(--line); border-radius: 10px; margin-top: 15px; overflow: hidden; }
+    .fee-row { display: flex; justify-content: space-between; padding: 12px 15px; font-size: 13px; border-bottom: 1px solid var(--line); }
+    .fee-row:last-child { border-bottom: none; }
+    .fee-row .lbl { color: var(--muted); }
+    .fee-row .val { font-weight: 700; color: #fff; }
+    .fee-row.net .lbl { color: var(--green); font-weight: 800; }
+    .fee-row.net .val { color: var(--green); font-size: 16px; }
+
+    /* History */
+    .history-list { display: flex; flex-direction: column; gap: 10px; }
+    .hist-item { background: #09090b; border: 1px solid var(--line); border-left: 3px solid var(--line); border-radius: 10px; padding: 12px; }
+    .hist-item.pending { border-left-color: var(--warn); }
+    .hist-item.approved { border-left-color: var(--green); }
+    .hist-item.rejected { border-left-color: var(--red); }
+    .hist-top { display: flex; justify-content: space-between; margin-bottom: 5px; }
+    .hist-amount { font-size: 16px; font-weight: 800; color: #fff; }
+    .hist-status { font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 5px; }
+    .hist-status.pending { background: rgba(251, 191, 36, 0.1); color: var(--warn); }
+    .hist-status.approved { background: rgba(34, 197, 94, 0.1); color: var(--green); }
+    .hist-status.rejected { background: rgba(237, 38, 56, 0.1); color: var(--red); }
+    .hist-meta { font-size: 11px; color: var(--muted); }
+
+    /* Modals */
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+    .overlay.active { display: flex; }
+    .modal-box { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; width: 100%; max-width: 350px; padding: 25px; text-align: center; }
+    .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 10px; }
+    .modal-text { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+    .modal-actions { display: flex; gap: 10px; }
+    .modal-btn { flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: 800; cursor: pointer; }
+    .btn-no { background: #292c36; color: white; }
+    .btn-yes { background: var(--green); color: white; }
+
+    /* Toast */
+    #toast { display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #24242b; border: 1px solid #45454e; color: white; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 1000; }
+    #toast.show { display: block; }
+    #toast.error { border-color: var(--red); color: #ff9da7; }
+</style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-left">
+            <button class="back-btn" onclick="window.location.href='lobby.html'">&lt;</button>
+            <div class="brand-title">VZR <span>WITHDRAW</span></div>
+        </div>
+        
+        <!-- WALLET TAG -->
+        <a href="deposit.html" class="wallet-combined">
+            <span class="coin">₹</span> <span id="headerWallet">0</span>
+            <span class="divider"></span>
+            <span class="plus-btn">+</span>
+        </a>
+    </div>
+
+    <!-- CARD 1: SAVE PAYOUT DETAILS -->
+    <div class="card">
+        <div class="card-title">1. Add Payout Details</div>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('upi')" id="tabUpi">UPI</button>
+            <button class="tab-btn" onclick="switchTab('bank')" id="tabBank">BANK</button>
+        </div>
+
+        <!-- UPI FORM -->
+        <div id="formUpi">
+            <div id="upiLocked" class="locked-msg">UPI Details Saved & Locked ✓</div>
+            <div class="form-group">
+                <label>Account Holder Name</label>
+                <input type="text" id="upiName" class="form-control" placeholder="Enter Full Name">
+            </div>
+            <div class="form-group">
+                <label>UPI ID</label>
+                <input type="text" id="upiId" class="form-control" placeholder="example@upi">
+            </div>
+            <button class="btn-main" id="upiBtn" onclick="saveDetails('upi')">Save UPI Details</button>
+        </div>
+
+        <!-- BANK FORM -->
+        <div id="formBank" style="display: none;">
+            <div id="bankLocked" class="locked-msg">Bank Details Saved & Locked ✓</div>
+            <div class="form-group">
+                <label>Account Holder Name</label>
+                <input type="text" id="bankNameHolder" class="form-control" placeholder="Enter Full Name">
+            </div>
+            <div class="form-group">
+                <label>Account Number</label>
+                <input type="text" id="bankAc" class="form-control" placeholder="Enter Account Number">
+            </div>
+            <div class="form-group">
+                <label>IFSC Code</label>
+                <input type="text" id="bankIfsc" class="form-control" placeholder="e.g. SBIN0001234">
+            </div>
+            <div class="form-group">
+                <label>Bank Name</label>
+                <input type="text" id="bankName" class="form-control" placeholder="e.g. SBI / HDFC">
+            </div>
+            <button class="btn-main" id="bankBtn" onclick="saveDetails('bank')">Save Bank Details</button>
+        </div>
+    </div>
+
+    <!-- CARD 2: REQUEST WITHDRAWAL -->
+    <div class="card">
+        <div class="card-title">2. Request Withdrawal</div>
+
+        <div class="bal-box">
+            <div class="lbl">Available Balance</div>
+            <div class="val" id="availBalance">₹0</div>
+        </div>
+
+        <div class="form-group">
+            <label>Amount (₹)</label>
+            <input type="number" id="wdAmount" class="form-control" placeholder="Min ₹50 - Max ₹50,000" min="50" max="50000">
+        </div>
+
+        <div class="form-group">
+            <label>Select Method</label>
+            <div class="tabs" style="margin-bottom:0;">
+                <button class="tab-btn active" onclick="selectMethod('upi')" id="methodUpi">UPI</button>
+                <button class="tab-btn" onclick="selectMethod('bank')" id="methodBank">BANK</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Account Password</label>
+            <input type="password" id="wdPassword" class="form-control" placeholder="Enter Login Password">
+        </div>
+
+        <div class="fee-summary">
+            <div class="fee-row">
+                <span class="lbl">Withdraw Amount</span>
+                <span class="val" id="feeAmt">₹0</span>
+            </div>
+            <div class="fee-row net">
+                <span class="lbl">You'll Receive</span>
+                <span class="val" id="feeNet">₹0</span>
+            </div>
+        </div>
+
+        <button class="btn-main" id="submitBtn" onclick="openConfirm()">Request Withdrawal</button>
+    </div>
+
+    <!-- CARD 3: HISTORY -->
+    <div class="card">
+        <div class="card-title">Withdrawal History</div>
+        <div class="history-list" id="histList">
+            <div style="text-align:center; color:var(--muted); font-size:13px; padding:10px;">Loading...</div>
+        </div>
+    </div>
+
+    <!-- CONFIRM MODAL -->
+    <div class="overlay" id="confirmModal">
+        <div class="modal-box">
+            <div class="modal-title">Confirm Withdrawal</div>
+            <div class="modal-text">
+                Are you sure you want to withdraw <b id="confirmAmtText" style="color:var(--red)">₹0</b>?<br>
+                <span style="font-size:11px; margin-top:5px; display:block;">Amount will be deducted from your wallet immediately.</span>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn btn-no" onclick="closeConfirm()">Cancel</button>
+                <button class="modal-btn btn-yes" onclick="submitWithdrawal()" id="confirmYesBtn">Yes, Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, doc, getDoc, updateDoc, collection, addDoc, onSnapshot, query, where, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDPIjZjIyUdQBUEni3eaaAa3TWTAit_8y4",
+            authDomain: "freefire-tournament-45058.firebaseapp.com",
+            projectId: "freefire-tournament-45058",
+            storageBucket: "freefire-tournament-45058.firebasestorage.app",
+            messagingSenderId: "786635453008",
+            appId: "1:786635453008:web:88ee24e0b02bf846619755"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentUser = null;
+        let userWallet = 0;
+        let selectedMethod = 'upi';
+        let savedDetails = { upi: null, bank: null };
+
+        // Toast
+        function showToast(msg, type = 'success') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'show ' + type;
+            setTimeout(() => t.className = '', 3000);
+        }
+
+        // Auth Check
+        onAuthStateChanged(auth, async (user) => {
+            if(user) {
+                currentUser = user;
+                loadWallet();
+                loadSavedDetails();
+                loadHistory();
+            } else {
+                window.location.href = "wallet.html";
+            }
+        });
+
+        // Load Wallet
+        function loadWallet() {
+            onSnapshot(doc(db, "users", currentUser.uid), (snap) => {
+                if(snap.exists()) {
+                    userWallet = snap.data().walletBalance || 0;
+                    document.getElementById("availBalance").textContent = `₹${userWallet}`;
+                    document.getElementById("headerWallet").textContent = userWallet;
+                }
+            });
+        }
+
+        // Load Saved Payout Details
+        async function loadSavedDetails() {
+            const snap = await getDoc(doc(db, "users", currentUser.uid));
+            if(snap.exists() && snap.data().payoutDetails) {
+                savedDetails = snap.data().payoutDetails;
+                if(savedDetails.upi) lockForm('upi', savedDetails.upi);
+                if(savedDetails.bank) lockForm('bank', savedDetails.bank);
+            }
+        }
+
+        // Tab Switch (For Forms)
+        window.switchTab = (tab) => {
+            document.getElementById('tabUpi').classList.toggle('active', tab === 'upi');
+            document.getElementById('tabBank').classList.toggle('active', tab === 'bank');
+            document.getElementById('formUpi').style.display = tab === 'upi' ? 'block' : 'none';
+            document.getElementById('formBank').style.display = tab === 'bank' ? 'block' : 'none';
+        };
+
+        // Save Details
+        window.saveDetails = async (type) => {
+            let data = {};
+            if(type === 'upi') {
+                const name = document.getElementById('upiName').value.trim();
+                const upi = document.getElementById('upiId').value.trim();
+                if(!name || !upi) return showToast("Please fill all fields", "error");
+                data = { name, upi };
+            } else {
+                const name = document.getElementById('bankNameHolder').value.trim();
+                const ac = document.getElementById('bankAc').value.trim();
+                const ifsc = document.getElementById('bankIfsc').value.trim();
+                const bank = document.getElementById('bankName').value.trim();
+                if(!name || !ac || !ifsc || !bank) return showToast("Please fill all fields", "error");
+                data = { name, ac, ifsc, bank };
+            }
+
+            try {
+                savedDetails[type] = data;
+                await updateDoc(doc(db, "users", currentUser.uid), {
+                    [`payoutDetails.${type}`]: data
+                });
+                lockForm(type, data);
+                showToast(`${type.toUpperCase()} Details Saved!`);
+            } catch(e) {
+                showToast("Failed to save: " + e.message, "error");
+            }
+        };
+
+        function lockForm(type, data) {
+            if(type === 'upi') {
+                document.getElementById('upiName').value = data.name;
+                document.getElementById('upiId').value = data.upi;
+                document.getElementById('upiLocked').style.display = 'block';
+                document.getElementById('upiBtn').disabled = true;
+                document.querySelectorAll('#formUpi .form-control').forEach(el => el.disabled = true);
+            } else {
+                document.getElementById('bankNameHolder').value = data.name;
+                document.getElementById('bankAc').value = data.ac;
+                document.getElementById('bankIfsc').value = data.ifsc;
+                document.getElementById('bankName').value = data.bank;
+                document.getElementById('bankLocked').style.display = 'block';
+                document.getElementById('bankBtn').disabled = true;
+                document.querySelectorAll('#formBank .form-control').forEach(el => el.disabled = true);
+            }
+        }
+
+        // Select Method (For Withdrawal)
+        window.selectMethod = (method) => {
+            if(!savedDetails[method]) {
+                return showToast(`Please save your ${method.toUpperCase()} details first!`, "error");
+            }
+            selectedMethod = method;
+            document.getElementById('methodUpi').classList.toggle('active', method === 'upi');
+            document.getElementById('methodBank').classList.toggle('active', method === 'bank');
+        };
+
+        // Calculate Amount
+        const wdAmtInput = document.getElementById('wdAmount');
+        wdAmtInput.addEventListener('input', () => {
+            let amt = Number(wdAmtInput.value) || 0;
+            document.getElementById('feeAmt').textContent = `₹${amt}`;
+            document.getElementById('feeNet').textContent = `₹${amt}`;
+        });
+
+        // Open Confirm Modal
+        window.openConfirm = () => {
+            const amt = Number(wdAmtInput.value);
+            const pwd = document.getElementById('wdPassword').value;
+
+            if(!amt || amt < 50) return showToast("Minimum withdrawal is ₹50", "error");
+            if(amt > 50000) return showToast("Maximum withdrawal is ₹50,000", "error");
+            if(amt > userWallet) return showToast("Insufficient wallet balance", "error");
+            if(!pwd) return showToast("Please enter your password", "error");
+            if(!savedDetails[selectedMethod]) return showToast("Payout details missing", "error");
+
+            document.getElementById('confirmAmtText').textContent = `₹${amt}`;
+            document.getElementById('confirmModal').classList.add('active');
+        };
+
+        window.closeConfirm = () => {
+            document.getElementById('confirmModal').classList.remove('active');
+        };
+
+        // Submit Withdrawal
+        window.submitWithdrawal = async () => {
+            const amt = Number(wdAmtInput.value);
+            const pwd = document.getElementById('wdPassword').value;
+            const btn = document.getElementById('confirmYesBtn');
+            
+            btn.disabled = true; btn.textContent = "Processing...";
+
+            try {
+                // 1. Deduct Wallet
+                await updateDoc(doc(db, "users", currentUser.uid), {
+                    walletBalance: increment(-amt)
+                });
+
+                // 2. Save Request
+                await addDoc(collection(db, "withdraw_requests"), {
+                    userId: currentUser.uid,
+                    email: currentUser.email,
+                    amount: amt,
+                    method: selectedMethod.toUpperCase(),
+                    methodDetails: savedDetails[selectedMethod],
+                    status: "pending",
+                    createdAt: serverTimestamp()
+                });
+
+                closeConfirm();
+                showToast("Withdrawal request submitted successfully!");
+                wdAmtInput.value = "";
+                document.getElementById('wdPassword').value = "";
+                document.getElementById('feeAmt').textContent = "₹0";
+                document.getElementById('feeNet').textContent = "₹0";
+
+            } catch(e) {
+                showToast("Error: " + e.message, "error");
+            }
+            btn.disabled = false; btn.textContent = "Yes, Confirm";
+        };
+
+        // Load History
+        function loadHistory() {
+            const q = query(collection(db, "withdraw_requests"), where("userId", "==", currentUser.uid));
+            onSnapshot(q, (snap) => {
+                const list = document.getElementById('histList');
+                if(snap.empty) {
+                    list.innerHTML = `<div style="text-align:center; color:var(--muted); font-size:13px; padding:10px;">No withdrawal requests yet.</div>`;
+                    return;
+                }
+
+                let html = "";
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const time = d.createdAt ? new Date(d.createdAt.toMillis()).toLocaleDateString() : "Just now";
+                    html = `
+                        <div class="hist-item ${d.status}">
+                            <div class="hist-top">
+                                <div class="hist-amount">₹${d.amount}</div>
+                                <div class="hist-status ${d.status}">${d.status.toUpperCase()}</div>
+                            </div>
+                            <div class="hist-meta">${d.method} • ${time}</div>
+                        </div>
+                    ` + html;
+                });
+                list.innerHTML = html;
+            });
+        }
+    </script>
+</body>
+</html>

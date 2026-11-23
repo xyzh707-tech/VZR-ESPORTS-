@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>VZR ESPORTS | Deposit</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Inter', 'Segoe UI', sans-serif; }
+    :root {
+        --bg: #09090b;
+        --panel: #14151c;
+        --line: #292c36;
+        --red: #ed2638;
+        --red-hover: #c91e2d;
+        --text: #f5f5f7;
+        --muted: #9ca3af;
+        --warn: #fbbf24;
+        --green: #22c55e;
+    }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 30px; }
+
+    /* HEADER */
+    .header { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: var(--panel); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 10; }
+    .header-left { display: flex; align-items: center; gap: 15px; }
+    .header h1 { font-size: 20px; font-weight: 800; letter-spacing: 1px; }
+    .back-btn { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0 5px; }
+
+    /* WALLET TAG */
+    .wallet-tag {
+        background: var(--panel); border: 1px solid var(--line); color: white;
+        padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;
+        display: flex; align-items: center; gap: 4px; height: 32px;
+        cursor: default; /* No pointer */
+    }
+    .wallet-tag .coin { color: #fbbf24; font-size: 12px; }
+
+    /* CONTAINER */
+    .container { max-width: 500px; margin: 20px auto; padding: 0 15px; display: flex; flex-direction: column; gap: 20px; }
+
+    /* CARD */
+    .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+
+    /* METHOD GRID */
+    .label-text { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: block; }
+    .method-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
+    .method-card { 
+        background: #09090b; border: 1px solid var(--line); border-radius: 12px; padding: 15px; 
+        display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer;
+        transition: 0.2s;
+    }
+    .method-card.active { border-color: var(--red); background: rgba(237, 38, 56, 0.05); }
+    .method-card img { width: 30px; height: 30px; object-fit: contain; }
+    .method-card span { font-size: 14px; font-weight: 700; color: var(--text); }
+    .method-card.active span { color: var(--red); }
+
+    /* INPUT */
+    .input-group { margin-bottom: 20px; }
+    .input-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 600; }
+    .input-wrap { position: relative; display: flex; align-items: center; }
+    .input-wrap span { position: absolute; left: 15px; font-size: 18px; font-weight: 600; color: var(--muted); }
+    .input-wrap input { 
+        width: 100%; background: #09090b; border: 1px solid var(--line); color: white; 
+        padding: 15px 15px 15px 40px; border-radius: 12px; font-size: 16px; font-weight: 600; outline: none;
+    }
+    .input-wrap input:focus { border-color: var(--red); }
+
+    /* SUMMARY */
+    .summary { background: #09090b; border: 1px solid var(--line); border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
+    .summary-row { display: flex; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid var(--line); font-size: 13px; }
+    .summary-row:last-child { border-bottom: none; }
+    .summary-row .lbl { color: var(--muted); }
+    .summary-row .val { font-weight: 700; color: var(--text); }
+    .summary-row.total .val { color: var(--green); font-size: 15px; }
+
+    /* BUTTON */
+    .btn-main { 
+        width: 100%; background: var(--red); color: white; border: none; padding: 16px; 
+        border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-main:active { background: var(--red-hover); }
+    .btn-main:disabled { opacity: 0.7; cursor: not-allowed; }
+
+    /* QR MODAL */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 100; padding: 15px; overflow-y: auto; }
+    .modal-overlay.active { display: flex; }
+    .modal-box { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; width: 100%; max-width: 400px; padding: 20px; position: relative; }
+    .close-btn { position: absolute; top: 15px; right: 15px; background: #292c36; border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    
+    .qr-title { text-align: center; font-size: 18px; font-weight: 800; margin-bottom: 5px; }
+    .qr-sub { text-align: center; font-size: 12px; color: var(--muted); margin-bottom: 15px; }
+    
+    .qr-amt-box { text-align: center; padding: 15px; background: rgba(237, 38, 56, 0.05); border: 1px solid rgba(237, 38, 56, 0.2); border-radius: 12px; margin-bottom: 15px; }
+    .qr-amt-box .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 5px; }
+    .qr-amt-box .val { font-size: 28px; font-weight: 800; color: var(--red); }
+
+    .qr-image-box { background: white; padding: 15px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; margin-bottom: 15px; min-height: 250px; justify-content: center; position: relative; }
+    .qr-image-box canvas, .qr-image-box img { display: block; }
+    
+    .qr-detail { display: flex; justify-content: space-between; align-items: center; background: #09090b; border: 1px solid var(--line); padding: 12px; border-radius: 10px; margin-bottom: 10px; }
+    .qr-detail .info { display: flex; flex-direction: column; gap: 3px; }
+    .qr-detail .lbl { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; }
+    .qr-detail .val { font-size: 13px; font-weight: 700; font-family: monospace; }
+    .btn-copy { background: rgba(237, 38, 56, 0.1); border: 1px solid rgba(237, 38, 56, 0.3); color: var(--red); padding: 8px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
+
+    .qr-timer { text-align: center; font-size: 13px; color: var(--warn); font-weight: 600; margin-bottom: 15px; }
+    .qr-btn-done { width: 100%; background: var(--green); color: white; border: none; padding: 15px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; }
+    
+    /* LOADER SPINNER */
+    .loader-overlay { position: absolute; inset: 0; background: #09090b; border-radius: 12px; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 15px; z-index: 5; }
+    .loader-overlay.show { display: flex; }
+    .spinner { width: 40px; height: 40px; border: 4px solid rgba(237, 38, 56, 0.2); border-top-color: var(--red); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loader-text { font-size: 12px; color: var(--muted); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+
+    /* TOAST */
+    #toast { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #24242b; border: 1px solid #45454e; color: white; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 1000; }
+    #toast.show { display: block; }
+</style>
+</head>
+<body>
+
+    <!-- NAV -->
+    <header class="header">
+        <div class="header-left">
+            <button class="back-btn" onclick="history.back()"><</button>
+            <h1>Deposit</h1>
+        </div>
+        <!-- WALLET TAG (No Click) -->
+        <div class="wallet-tag">
+            <span class="coin">₹</span> <span id="userWallet">0</span>
+        </div>
+    </header>
+
+    <!-- CONTAINER -->
+    <div class="container">
+        <div class="card">
+            <label class="label-text">Select Payment Method</label>
+            <div class="method-grid">
+                <div class="method-card active">
+                    <svg viewBox="0 0 48 48" width="30" height="30" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="48" height="48" rx="10" fill="#ffffff"/>
+                        <path d="M13 20 L24 30 L35 20" stroke="#ff8f1f" stroke-width="3.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M24 30 L24 15" stroke="#097a3a" stroke-width="3.8" stroke-linecap="round"/>
+                    </svg>
+                    <span>UPI (GPay, PhonePe, Paytm)</span>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Deposit Amount (Min: ₹50)</label>
+                <div class="input-wrap">
+                    <span>₹</span>
+                    <input type="number" id="depositAmount" value="100" placeholder="Enter amount" min="50">
+                </div>
+            </div>
+
+            <div class="summary">
+                <div class="summary-row">
+                    <span class="lbl">You Pay</span>
+                    <span class="val" id="sumPay">₹100</span>
+                </div>
+                <div class="summary-row total">
+                    <span class="lbl">You Receive</span>
+                    <span class="val" id="sumReceive">₹100</span>
+                </div>
+            </div>
+
+            <button class="btn-main" id="payBtn" onclick="openDepositModal()">
+                Proceed to Pay
+            </button>
+        </div>
+    </div>
+
+    <!-- QR MODAL -->
+    <div class="modal-overlay" id="qrModal">
+        <div class="modal-box">
+            <button class="close-btn" onclick="closeModal()">✕</button>
+            
+            <div class="qr-title">Complete Payment</div>
+            <div class="qr-sub">Scan the QR or pay to UPI ID below</div>
+            
+            <div class="qr-amt-box">
+                <div class="lbl">Amount to Pay</div>
+                <div class="val" id="qrAmount">₹100</div>
+            </div>
+
+            <div class="qr-image-box">
+                <!-- Loader for QR -->
+                <div class="loader-overlay" id="qrLoader">
+                    <div class="spinner"></div>
+                    <div class="loader-text">Generating QR...</div>
+                </div>
+                <div id="qrcode"></div>
+            </div>
+
+            <div class="qr-detail">
+                <div class="info">
+                    <span class="lbl">UPI ID</span>
+                    <span class="val" id="qrUpiId">loading...</span>
+                </div>
+                <button class="btn-copy" onclick="copyText('qrUpiId')">Copy</button>
+            </div>
+
+            <div class="qr-timer" id="qrTimer">Expires in 05:00</div>
+
+            <button class="qr-btn-done" onclick="submitDeposit()">I Have Paid</button>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, addDoc, doc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDPIjZjIyUdQBUEni3eaaAa3TWTAit_8y4",
+            authDomain: "freefire-tournament-45058.firebaseapp.com",
+            projectId: "freefire-tournament-45058",
+            storageBucket: "freefire-tournament-45058.firebasestorage.app",
+            messagingSenderId: "786635453008",
+            appId: "1:786635453008:web:88ee24e0b02bf846619755"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentUser = null;
+        let timerInterval = null;
+        const UPI_ID = "fbnanbspt@ptyes"; // Updated UPI ID
+
+        // Load Wallet Balance
+        onAuthStateChanged(auth, async (user) => {
+            if(user) {
+                currentUser = user;
+                onSnapshot(doc(db, "users", user.uid), (snap) => {
+                    if(snap.exists()) {
+                        document.getElementById("userWallet").textContent = snap.data().walletBalance || 0;
+                    }
+                });
+            } else {
+                window.location.href = "wallet.html";
+            }
+        });
+
+        const amtInput = document.getElementById("depositAmount");
+        amtInput.addEventListener("input", () => {
+            const val = Number(amtInput.value) || 0;
+            document.getElementById("sumPay").textContent = `₹${val}`;
+            document.getElementById("sumReceive").textContent = `₹${val}`;
+        });
+
+        function showToast(msg) {
+            const t = document.getElementById("toast");
+            t.textContent = msg;
+            t.classList.add("show");
+            setTimeout(() => t.classList.remove("show"), 3000);
+        }
+
+        window.copyText = (id) => {
+            const text = document.getElementById(id).textContent;
+            navigator.clipboard.writeText(text).then(() => showToast("Copied!"));
+        };
+
+        window.openDepositModal = () => {
+            const amt = Number(amtInput.value);
+            if(!amt || amt < 50) { showToast("Minimum deposit is ₹50"); return; }
+
+            // Show Modal immediately
+            document.getElementById("qrModal").classList.add("active");
+            document.getElementById("qrAmount").textContent = `₹${amt}`;
+            document.getElementById("qrUpiId").textContent = UPI_ID;
+            
+            // Show Loader and hide QR box content
+            const loader = document.getElementById("qrLoader");
+            const qrTarget = document.getElementById("qrcode");
+            loader.classList.add("show");
+            qrTarget.style.display = "none";
+            qrTarget.innerHTML = ""; // Clear old QR
+
+            // Start 3 Second Loader
+            setTimeout(() => {
+                const upiUrl = `upi://pay?pa=${UPI_ID}&pn=VZR%20ESPORTS&am=${amt}&cu=INR`;
+                
+                new QRCode(qrTarget, {
+                    text: upiUrl,
+                    width: 200,
+                    height: 200,
+                    colorDark: "#09090b",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+
+                // Hide Loader, Show QR
+                loader.classList.remove("show");
+                qrTarget.style.display = "block";
+
+                // Start Timer
+                startTimer();
+
+            }, 3000); // 3000ms = 3 seconds
+        };
+
+        function startTimer() {
+            let timeLeft = 300;
+            if(timerInterval) clearInterval(timerInterval);
+            document.getElementById("qrTimer").textContent = "Expires in 05:00";
+            document.getElementById("qrTimer").style.color = "var(--warn)";
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                if(timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById("qrTimer").textContent = "QR Expired!";
+                    document.getElementById("qrTimer").style.color = "var(--red)";
+                    return;
+                }
+                const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+                const s = (timeLeft % 60).toString().padStart(2, '0');
+                document.getElementById("qrTimer").textContent = `Expires in ${m}:${s}`;
+            }, 1000);
+        }
+
+        window.closeModal = () => {
+            document.getElementById("qrModal").classList.remove("active");
+            if(timerInterval) clearInterval(timerInterval);
+        };
+
+        window.submitDeposit = async () => {
+            if(!currentUser) return;
+            const amt = Number(amtInput.value);
+            
+            try {
+                await addDoc(collection(db, "deposit_requests"), {
+                    userId: currentUser.uid,
+                    email: currentUser.email,
+                    amount: amt,
+                    status: "pending",
+                    createdAt: serverTimestamp()
+                });
+                
+                closeModal();
+                showToast("Deposit request sent! Admin will verify shortly.");
+                amtInput.value = "100";
+                document.getElementById("sumPay").textContent = "₹100";
+                document.getElementById("sumReceive").textContent = "₹100";
+                
+            } catch(e) {
+                showToast("Error: " + e.message);
+            }
+        };
+    </script>
+</body>
+</html>

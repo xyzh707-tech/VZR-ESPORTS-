@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#09090b">
+<title>VZR ESPORTS | Admin</title>
+<style>
+:root{--bg:#09090b;--panel:#14151c;--line:#292c36;--red:#ed2638;--text:#f5f5f7;--muted:#9ca3af}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
+button,input,textarea,select{font:inherit}button{border:0;border-radius:9px;padding:12px 15px;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.55;cursor:not-allowed}.primary{background:var(--red);color:white}.secondary{background:#292c36;color:white}.danger{background:#451c25;color:#ff9da7}.success{background:#14532d;color:#dcfce7}.green{background:#22c55e;color:white}.warning{background:#78350f;color:#fde68a}
+input,textarea,select{width:100%;background:#0d0e13;color:white;border:1px solid #343743;border-radius:9px;padding:12px;margin-top:6px}
+textarea{min-height:80px;resize:vertical}label{display:block;margin-top:12px;color:#c7cad2;font-size:13px}
+.hidden{display:none!important}.wrap{max-width:1150px;margin:auto;padding:15px}
+header{display:flex;justify-content:space-between;align-items:center;padding:15px 0;border-bottom:1px solid var(--line);margin-bottom:20px}
+.logo{background:var(--red);padding:12px 15px;border-radius:10px;font-size:22px;font-weight:900}.brand{display:flex;align-items:center;gap:12px;font-weight:bold}
+small,.muted{color:var(--muted)}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:15px}
+.login{max-width:420px;margin:10vh auto}.login button{width:100%;margin-top:15px}
+.layout{display:grid;grid-template-columns:220px 1fr;gap:15px}.sidebar{height:max-content;position:sticky;top:10px}
+.navbtn{width:100%;display:block;text-align:left;background:transparent;color:white;margin:3px 0}.navbtn.active{background:#40212a;color:white}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.item{background:#1c1e26;border:1px solid var(--line);padding:13px;border-radius:12px;min-width:0}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.status{color:#86efac;font-size:12px}
+#toast{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#282b35;padding:13px 18px;border-radius:10px;z-index:10;max-width:90%;font-weight:bold}
+.error-box{background:#451c25;color:#ff9da7;border:1px solid #7a2d3c;padding:15px;border-radius:10px;margin-bottom:15px;font-weight:bold;display:none}
+.preview{width:100%;height:120px;object-fit:cover;border-radius:9px;margin-top:10px;background:#09090b}
+.user-item{background:#0d0e13;padding:15px;border-radius:10px;border:1px solid var(--line);margin-bottom:10px}
+.user-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.user-info b{color:var(--red);font-size:15px}.user-info small{display:block;margin-top:4px}
+.balance-pill{font-weight:bold;color:#86efac}.balance-actions{display:grid;grid-template-columns:minmax(100px,1fr) auto auto;gap:8px;align-items:end;margin-top:12px}
+.balance-actions input{margin:0}.banned-text{color:#ff4d4d;font-weight:bold;font-size:12px}
+.help{font-size:12px;color:var(--muted);line-height:1.5}.empty{padding:12px;color:var(--muted)}
+
+/* MODALS */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 100; padding: 15px; }
+.modal-overlay.active { display: flex; }
+.modal-box { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--line); background: #1c1e26; }
+.modal-header h2 { font-size: 16px; margin: 0; }
+.close-btn { background: #292c36; border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.modal-content { padding: 20px; overflow-y: auto; }
+
+/* REQUEST ITEMS */
+.req-item { background: #0d0e13; border: 1px solid var(--line); border-left: 4px solid #fbbf24; padding: 15px; border-radius: 10px; margin-bottom: 12px; }
+.req-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.req-amount { font-size: 20px; font-weight: bold; color: #fff; }
+.req-info { font-size: 12px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; background: #09090b; padding: 10px; border-radius: 6px; border: 1px solid var(--line); }
+.req-info b { color: var(--text); }
+.req-actions { display: flex; gap: 10px; }
+.req-actions button { flex: 1; padding: 10px; font-size: 12px; }
+
+/* MEMBER DETAILS LIST */
+.match-detail-card { background: #09090b; border: 1px solid var(--line); padding: 12px; border-radius: 8px; margin-bottom: 10px; }
+.md-title { font-size: 14px; font-weight: bold; color: var(--red); margin-bottom: 5px; }
+.md-info { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 10px; }
+.md-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.counter-btn { background: #292c36; color: white; border: none; width: 28px; height: 28px; border-radius: 6px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.counter-val { width: 40px; text-align: center; font-weight: bold; font-size: 14px; background: #14151c; border: 1px solid var(--line); border-radius: 6px; color: white; padding: 4px; }
+.booyah-btn { background: #fbbf24; color: #000; padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; border: none; cursor: pointer; }
+.booyah-btn.active { background: #22c55e; color: #fff; }
+
+/* BANNER LINK FIELD HINT */
+.link-hint { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+
+@media(max-width:700px){.layout{grid-template-columns:1fr}.sidebar{position:static}.grid{grid-template-columns:1fr}.navlist{display:grid;grid-template-columns:1fr 1fr}.navbtn{font-size:12px;padding:10px}.balance-actions{grid-template-columns:1fr 1fr}.balance-actions input{grid-column:1/-1}.user-top{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <div class="brand"><div class="logo">V</div><div>VZR ESPORTS<br><small>ADMIN CONTROL PANEL</small></div></div>
+ <div class="row"><span id="connection" class="status">OFFLINE</span><button id="logout" class="secondary hidden">Logout</button></div>
+</header>
+
+<section id="loginScreen" class="card login">
+ <h2>ADMIN LOGIN</h2><p class="muted">Welcome to VZR control panel</p>
+ <label>Email address</label><input id="email" type="email" placeholder="Your admin email" autocomplete="username">
+ <label>Password</label><input id="password" type="password" placeholder="Your Firebase password" autocomplete="current-password">
+ <button id="loginBtn" class="primary">LOGIN</button><p id="loginError" class="muted" style="color:#ff9da7"></p>
+</section>
+
+<main id="adminApp" class="layout hidden">
+ <aside class="card sidebar"><b>WEBSITE MANAGEMENT</b>
+  <div class="navlist" id="navigation">
+   <button class="navbtn active" data-page="lobby">▣ Lobby.html</button>
+   <button class="navbtn" data-page="tournament">♛ Tournament.html</button>
+   <button class="navbtn" data-page="users">👥 User Management</button>
+   <button class="navbtn" data-page="deposits">💰 Deposit Requests</button>
+   <button class="navbtn" data-page="withdrawals">💸 Withdrawal Requests</button>
+   <button class="navbtn" data-page="leaderboard">◈ Leaderboard</button>
+   <button class="navbtn" data-page="announcements">⚡ Announcements</button>
+  </div>
+ </aside>
+ <section>
+  <div id="saveErrorBox" class="error-box"></div>
+  <div class="row"><div><h2 id="pageTitle">Lobby Management</h2><p class="muted">Manage your website content</p></div></div>
+
+  <div id="lobbyEditor">
+   <div class="card">
+    <div class="row"><h3>LOBBY BANNERS</h3><button id="addBanner" class="primary">+ Add Banner</button></div>
+    <p class="help" style="margin-top:8px;">
+      <b>Link + Button Text</b> dono dalne par banner ke niche ek clickable button dikhega.
+      Agar dono khali chhodo to banner sirf image ki tarah dikhega (jaise abhi hai).
+    </p>
+    <div id="bannerList" class="grid" style="margin-top:15px"></div>
+   </div>
+   <div class="card"><div class="row"><h3>LOBBY BUTTONS / CARDS</h3><button id="addTile" class="primary">+ Add Card</button></div><div id="tileList" class="grid" style="margin-top:15px"></div></div>
+   <button id="saveLobby" class="primary" style="width:100%;margin-top:10px">SAVE LOBBY</button>
+  </div>
+
+  <div id="tournamentEditor" class="hidden">
+   <div class="card"><h3>ADD NEW TOURNAMENT</h3><div class="grid"><div>
+    <label>Tournament Image</label><input type="file" accept="image/*" id="tImage">
+    <label>Tournament Title</label><input id="tTitle" placeholder="Tournament title">
+    <label>Game Mode</label><select id="tMode"><option value="BR Solo">Battle Royale - Solo</option><option value="BR Duo">Battle Royale - Duo</option><option value="BR Squad">Battle Royale - Squad</option><option value="CS 1v1">Clash Squad - 1v1</option><option value="CS 2v2">Clash Squad - 2v2</option><option value="CS 4v4">Clash Squad - 4v4</option><option value="LW 1v1">Lone Wolf - 1v1</option></select>
+    <label>Map</label><select id="tMap"><option>Bermuda</option><option>Purgatory</option><option>Kalahari</option><option>Alpine</option></select>
+    <label>Total Seats (Slots)</label><input id="tSlots" type="number" min="1" value="48">
+   </div><div>
+    <label>Entry Fee (₹)</label><input id="tFee" type="number" min="0" value="0">
+    <label>Total Prize Pool (₹)</label><input id="tPrize" type="number" min="0" value="0">
+    <label>Per Kill (₹)</label><input id="tPerKill" type="number" min="0" value="0">
+    <label>Booyah / Winner Prize (₹)</label><input id="tBooyah" type="number" min="0" value="0">
+    <label>Date & Time</label><input id="tDate" placeholder="Ex: 18 Nov, 08:00 PM">
+   </div></div>
+   <label>Rules & Additional Details</label><textarea id="tRules"></textarea>
+   <button id="publishTournament" class="primary" style="width:100%;margin-top:20px">PUBLISH TOURNAMENT</button></div>
+   
+   <div class="card">
+       <div class="row"><h3>LIVE TOURNAMENTS</h3></div>
+       <div id="tournamentList" style="display:flex;flex-direction:column;gap:10px;margin-top:15px"></div>
+   </div>
+  </div>
+
+  <!-- USER MANAGEMENT -->
+  <div id="usersEditor" class="hidden">
+   <div class="card">
+    <h3>SEARCH USER BY MODEL NUMBER</h3>
+    <p class="help">Model number enter karke user search karein (e.g. 001).</p>
+    <div class="row"><input id="searchModelNo" placeholder="Enter Model No (e.g. 001)" style="flex:1"><button class="primary" id="searchUserBtn">SEARCH</button><button class="secondary" id="showAllUsersBtn">SHOW ALL</button></div>
+   </div>
+   <div class="card">
+    <div class="row"><h3>REGISTERED USERS</h3><span id="userCount" class="muted"></span></div>
+    <div id="userList"><p class="muted">Search a Model No to see user details.</p></div>
+   </div>
+  </div>
+
+  <!-- DEPOSIT REQUESTS -->
+  <div id="depositEditor" class="hidden">
+    <div class="card">
+        <div class="row"><h3>PENDING DEPOSIT REQUESTS</h3><span id="depCount" class="muted"></span></div>
+        <div id="depositList" style="margin-top:15px;">
+            <p class="muted">Loading requests...</p>
+        </div>
+    </div>
+  </div>
+
+  <!-- WITHDRAWAL REQUESTS -->
+  <div id="withdrawalEditor" class="hidden">
+    <div class="card">
+        <div class="row"><h3>PENDING WITHDRAWAL REQUESTS</h3><span id="wdCount" class="muted"></span></div>
+        <div id="withdrawalList" style="margin-top:15px;">
+            <p class="muted">Loading requests...</p>
+        </div>
+    </div>
+  </div>
+  
+  <div id="otherEditor" class="card hidden"><h3 id="otherTitle">Section</h3><p class="muted">This section is not connected yet.</p></div>
+ </section>
+</main>
+</div>
+
+<!-- USER DETAILS MODAL -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="umTitle">User Details</h2>
+      <button class="close-btn" onclick="document.getElementById('userModal').classList.remove('active')">✕</button>
+    </div>
+    <div class="modal-content" id="umContent"></div>
+  </div>
+</div>
+
+<!-- REJECT MODAL -->
+<div class="modal-overlay" id="rejectModal">
+  <div class="modal-box" style="max-width:400px;">
+    <div class="modal-header">
+      <h2>Reject Request</h2>
+      <button class="close-btn" onclick="document.getElementById('rejectModal').classList.remove('active')">✕</button>
+    </div>
+    <div class="modal-content">
+        <p class="help" style="margin-bottom:10px;">Enter reason. This message will be visible to the user in their history.</p>
+        <textarea id="rejectReason" placeholder="e.g. Invalid UPI ID, Minimum amount not met..."></textarea>
+        <button class="danger" style="width:100%; margin-top:15px;" onclick="confirmReject()">Confirm Reject</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,doc,setDoc,onSnapshot,serverTimestamp,collection,addDoc,deleteDoc,query,where,getDocs,runTransaction,updateDoc,getDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig={
+ apiKey:"AIzaSyDPIjZjIyUdQBUEni3eaaAa3TWTAit_8y4",
+ authDomain:"freefire-tournament-45058.firebaseapp.com",
+ projectId:"freefire-tournament-45058",
+ storageBucket:"freefire-tournament-45058.firebasestorage.app",
+ messagingSenderId:"786635453008",
+ appId:"1:786635453008:web:88ee24e0b02bf846619755",
+ measurementId:"G-X961KLFG3C"
+};
+const ADMIN_UID="YeJt2bNfX6a6KqHjoDi7ozX1N572";
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+const $=id=>document.getElementById(id);
+let lobby={banners:[],tiles:[]},unsubscribeLobby=null,unsubscribeTourney=null,unsubscribeUsers=null,unsubscribeDeposits=null,unsubscribeWithdrawals=null;
+let allUsers=[],allTourneys=[],allDeposits=[],allWithdrawals=[];
+let currentRejectId=null;
+
+function notify(msg){$("toast").textContent=msg;$("toast").style.display="block";clearTimeout(notify.timer);notify.timer=setTimeout(()=>$("toast").style.display="none",3000)}
+function escapeHTML(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function makeId(){return crypto.randomUUID()}
+function showError(msg){const b=$("saveErrorBox");b.textContent=msg;b.style.display="block";window.scrollTo({top:0,behavior:"smooth"})}
+function hideError(){$("saveErrorBox").style.display="none"}
+function stopListeners(){[unsubscribeLobby,unsubscribeTourney,unsubscribeUsers,unsubscribeDeposits,unsubscribeWithdrawals].forEach(fn=>{if(fn)fn()});unsubscribeLobby=unsubscribeTourney=unsubscribeUsers=unsubscribeDeposits=unsubscribeWithdrawals=null}
+
+/* LOGIN */
+$("loginBtn").onclick=async()=>{
+ $("loginError").textContent="";$("loginBtn").disabled=true;$("loginBtn").textContent="LOGGING IN...";
+ try{await signInWithEmailAndPassword(auth,$("email").value.trim(),$("password").value)}
+ catch(e){$("loginError").textContent=e.message;$("loginBtn").disabled=false;$("loginBtn").textContent="LOGIN"}
+};
+$("password").addEventListener("keydown",e=>{if(e.key==="Enter")$("loginBtn").click()});
+$("logout").onclick=()=>signOut(auth);
+onAuthStateChanged(auth,async user=>{
+ if(!user){stopListeners();$("loginScreen").classList.remove("hidden");$("adminApp").classList.add("hidden");$("logout").classList.add("hidden");$("connection").textContent="SIGNED OUT";$("loginBtn").disabled=false;$("loginBtn").textContent="LOGIN";return}
+ if(user.uid!==ADMIN_UID){$("loginError").textContent="This account is not authorized as admin.";await signOut(auth);return}
+ $("loginScreen").classList.add("hidden");$("adminApp").classList.remove("hidden");$("logout").classList.remove("hidden");$("connection").textContent="ADMIN VERIFIED";startLobbyListener();
+});
+
+/* NAVIGATION */
+$("navigation").onclick=e=>{
+ const btn=e.target.closest("[data-page]");if(!btn)return;
+ const page=btn.dataset.page;
+ document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b===btn));
+ $("pageTitle").textContent=({lobby:"Lobby Management",tournament:"Tournament Management",users:"User Management",deposits:"Deposit Requests",withdrawals:"Withdrawal Requests",leaderboard:"Leaderboard",announcements:"Announcements"})[page];
+ $("lobbyEditor").classList.toggle("hidden",page!=="lobby");
+ $("tournamentEditor").classList.toggle("hidden",page!=="tournament");
+ $("usersEditor").classList.toggle("hidden",page!=="users");
+ $("depositEditor").classList.toggle("hidden",page!=="deposits");
+ $("withdrawalEditor").classList.toggle("hidden",page!=="withdrawals");
+ $("otherEditor").classList.toggle("hidden",!["leaderboard","announcements"].includes(page));
+ $("otherTitle").textContent=page==="leaderboard"?"Leaderboard":"Announcements";
+ 
+ if(page==="tournament")startTournamentListener();else if(unsubscribeTourney){unsubscribeTourney();unsubscribeTourney=null}
+ if(page==="users")startUserListener();else if(unsubscribeUsers){unsubscribeUsers();unsubscribeUsers=null}
+ if(page==="deposits")startDepositListener();else if(unsubscribeDeposits){unsubscribeDeposits();unsubscribeDeposits=null}
+ if(page==="withdrawals")startWithdrawalListener();else if(unsubscribeWithdrawals){unsubscribeWithdrawals();unsubscribeWithdrawals=null}
+};
+
+/* LOBBY */
+function startLobbyListener(){
+ if(unsubscribeLobby)unsubscribeLobby();
+ unsubscribeLobby=onSnapshot(doc(db,"siteContent","lobby"),snap=>{
+  lobby=snap.exists()?snap.data():{banners:[],tiles:[]};
+  if(!Array.isArray(lobby.banners))lobby.banners=[];if(!Array.isArray(lobby.tiles))lobby.tiles=[];
+  renderLobby();
+ },e=>showError("LIVE SYNC ERROR: "+e.message));
+}
+
+function renderLobby(){
+ $("bannerList").innerHTML="";$("tileList").innerHTML="";
+ 
+ lobby.banners.forEach((b,i)=>{
+   $("bannerList").innerHTML+=`
+     <div class="item">
+       <div class="row"><b>Banner ${i+1}</b><button class="danger" onclick="delBanner(${i})">Delete</button></div>
+       <label>Eyebrow</label>
+       <input data-beyebrow="${i}" value="${escapeHTML(b.eyebrow||"")}">
+       <label>Heading</label>
+       <input data-btitle="${i}" value="${escapeHTML(b.title||"")}">
+       <label>Description</label>
+       <textarea data-bdesc="${i}">${escapeHTML(b.description||"")}</textarea>
+       
+       <div style="background:#09090b;border:1px dashed #343743;padding:10px;border-radius:9px;margin-top:12px;">
+         <div style="font-size:11px;color:#fbbf24;font-weight:bold;letter-spacing:.5px;margin-bottom:6px;">🔗 BANNER LINK (OPTIONAL)</div>
+         <label style="margin-top:0;">Button Text (e.g. Join Now)</label>
+         <input data-bbtntext="${i}" value="${escapeHTML(b.btnText||"")}" placeholder="Join Now / Register / View More">
+         <label>Link URL</label>
+         <input data-blink="${i}" value="${escapeHTML(b.link||"")}" placeholder="https://... or tournament.html">
+         <div class="link-hint">💡 Link + Button Text dono dalne par banner ke niche button dikhega. Khali chhodne par banner normal rahega.</div>
+       </div>
+       
+       <label>Banner Image</label>
+       <input type="file" accept="image/*" data-bfile="${i}">
+       ${b.imageUrl?`<img class="preview" src="${escapeHTML(b.imageUrl)}">`:""}
+     </div>`;
+ });
+ 
+ lobby.tiles.forEach((t,i)=>{
+   $("tileList").innerHTML+=`
+     <div class="item">
+       <div class="row"><b>Card ${i+1}</b><button class="danger" onclick="delTile(${i})">Delete</button></div>
+       <label>Name</label>
+       <input data-ttitle="${i}" value="${escapeHTML(t.title||"")}">
+       <label>Description</label>
+       <textarea data-tdesc="${i}">${escapeHTML(t.description||"")}</textarea>
+       <label>Link</label>
+       <input data-tlink="${i}" value="${escapeHTML(t.link||"")}">
+       <input type="file" accept="image/*" data-tfile="${i}">
+       ${t.imageUrl?`<img class="preview" src="${escapeHTML(t.imageUrl)}">`:""}
+     </div>`;
+ });
+}
+
+window.delBanner=i=>{lobby.banners.splice(i,1);renderLobby()};
+window.delTile=i=>{lobby.tiles.splice(i,1);renderLobby()};
+$("addBanner").onclick=()=>{lobby.banners.push({id:makeId(),eyebrow:"VZR ESPORTS",title:"New Banner",description:"Description",imageUrl:"",btnText:"",link:""});renderLobby()};
+$("addTile").onclick=()=>{lobby.tiles.push({id:makeId(),title:"New Card",description:"Description",link:"",imageUrl:""});renderLobby()};
+
+async function uploadImage(file){
+ if(!file)return null;if(file.size>800*1024)throw new Error("Image 800KB se choti honi chahiye.");
+ return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=()=>reject(new Error("Image read failed"));r.readAsDataURL(file)});
+}
+
+$("saveLobby").onclick=async()=>{
+ hideError();const btn=$("saveLobby");btn.disabled=true;btn.textContent="SAVING...";
+ try{
+  document.querySelectorAll("[data-beyebrow]").forEach(e=>lobby.banners[+e.dataset.beyebrow].eyebrow=e.value.trim());
+  document.querySelectorAll("[data-btitle]").forEach(e=>lobby.banners[+e.dataset.btitle].title=e.value.trim());
+  document.querySelectorAll("[data-bdesc]").forEach(e=>lobby.banners[+e.dataset.bdesc].description=e.value.trim());
+  document.querySelectorAll("[data-bbtntext]").forEach(e=>{
+    const idx=+e.dataset.bbtntext;
+    lobby.banners[idx].btnText=e.value.trim();
+  });
+  document.querySelectorAll("[data-blink]").forEach(e=>{
+    const idx=+e.dataset.blink;
+    lobby.banners[idx].link=e.value.trim();
+  });
+  document.querySelectorAll("[data-ttitle]").forEach(e=>lobby.tiles[+e.dataset.ttitle].title=e.value.trim());
+  document.querySelectorAll("[data-tdesc]").forEach(e=>lobby.tiles[+e.dataset.tdesc].description=e.value.trim());
+  document.querySelectorAll("[data-tlink]").forEach(e=>lobby.tiles[+e.dataset.tlink].link=e.value.trim());
+  for(let i=0;i<lobby.banners.length;i++){const f=$(`[data-bfile="${i}"]`)?.files?.[0];if(f)lobby.banners[i].imageUrl=await uploadImage(f)}
+  for(let i=0;i<lobby.tiles.length;i++){const f=$(`[data-tfile="${i}"]`)?.files?.[0];if(f)lobby.tiles[i].imageUrl=await uploadImage(f)}
+  await setDoc(doc(db,"siteContent","lobby"),{banners:lobby.banners,tiles:lobby.tiles,updatedAt:serverTimestamp()});
+  notify("Lobby saved successfully!");
+ }catch(e){showError("SAVE FAILED: "+e.message)}
+ btn.disabled=false;btn.textContent="SAVE LOBBY";
+};
+
+/* TOURNAMENTS */
+function startTournamentListener(){
+ if(unsubscribeTourney)unsubscribeTourney();
+ unsubscribeTourney=onSnapshot(collection(db,"tournaments"),snap=>{
+  allTourneys = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  $("tournamentList").innerHTML="";
+  if(snap.empty){$("tournamentList").innerHTML="<p class='muted'>No tournaments found.</p>";return}
+  allTourneys.forEach(t=>{
+   const id=t.id,slots=Number(t.slots)||48,joined=Number(t.joined)||0,percent=Math.min(joined/slots*100,100);
+   $("tournamentList").innerHTML+=`<div class="item row"><div style="display:flex;gap:10px;align-items:center;min-width:0">${t.imageUrl?`<img src="${escapeHTML(t.imageUrl)}" style="width:60px;height:60px;object-fit:cover;border-radius:8px">`:""}<div><b style="color:#ed2638">${escapeHTML(t.title)}</b><br><small>${escapeHTML(t.mode)} | ${escapeHTML(t.map)} | Prize: ₹${Number(t.prize)||0}</small><div style="width:200px;height:6px;background:#333;border-radius:3px;margin-top:8px"><div style="width:${percent}%;height:100%;background:#ed2638;border-radius:3px"></div></div><small>${joined} / ${slots} Joined</small></div></div><button class="danger" onclick="delTournament('${id}')">Delete</button></div>`;
+  });
+ },e=>showError("TOURNAMENT SYNC ERROR: "+e.message));
+}
+window.delTournament=async id=>{if(confirm("Are you sure you want to delete this tournament?"))try{await deleteDoc(doc(db,"tournaments",id));notify("Tournament deleted")}catch(e){showError("Delete failed: "+e.message)}};
+$("publishTournament").onclick=async()=>{
+ hideError();const title=$("tTitle").value.trim();if(!title){alert("Title is required");return}
+ const btn=$("publishTournament");btn.disabled=true;btn.textContent="PUBLISHING...";
+ try{
+  const file=$("tImage").files[0],imageUrl=file?await uploadImage(file):"";
+  const slots=Number($("tSlots").value),fee=Number($("tFee").value),prize=Number($("tPrize").value),perKill=Number($("tPerKill").value),booyah=Number($("tBooyah").value);
+  if(!Number.isInteger(slots)||slots<1||[fee,prize,perKill,booyah].some(n=>!Number.isFinite(n)||n<0))throw new Error("Slots and prize amounts valid enter karein.");
+  await addDoc(collection(db,"tournaments"),{title,mode:$("tMode").value,map:$("tMap").value,date:$("tDate").value.trim()||"TBA",slots,joined:0,entryFee:fee,prize,perKill,booyah,rules:$("tRules").value.trim(),imageUrl,createdAt:serverTimestamp(),players:[]});
+  notify("Tournament published!");["tTitle","tDate","tRules","tImage"].forEach(id=>$(id).value="");["tFee","tPrize","tPerKill","tBooyah"].forEach(id=>$(id).value="0");
+ }catch(e){showError("FAILED TO PUBLISH: "+e.message)}
+ btn.disabled=false;btn.textContent="PUBLISH TOURNAMENT";
+};
+
+/* USER MANAGEMENT */
+function startUserListener(){
+ if(unsubscribeUsers)unsubscribeUsers();
+ $("userList").innerHTML="<p class='muted'>Loading users...</p>";
+ unsubscribeUsers=onSnapshot(collection(db,"users"),snap=>{
+  allUsers=snap.docs.map(d=>({id:d.id,...d.data()}));
+  renderUsers(allUsers);
+ },e=>showError("USER SYNC ERROR: "+e.message));
+}
+
+async function renderUsers(users){
+ $("userList").innerHTML="";$("userCount").textContent=`${users.length} user(s)`;
+ if(!users.length){$("userList").innerHTML="<p class='empty'>No users found.</p>";return}
+ 
+ users.forEach(u => {
+  const modelNo = String(u.modelNo ?? "Pending");
+  const balance = Number(u.walletBalance) || 0;
+  const isBanned = !!u.isBanned;
+
+  let totalPlayed = 0, totalKills = 0, totalSpent = 0;
+  let matchHistoryHTML = "";
+
+  allTourneys.forEach(t => {
+      if(t.players) {
+          const myData = t.players.find(p => p.userId === u.id);
+          if(myData) {
+              totalPlayed++;
+              totalSpent += (t.entryFee || 0);
+              totalKills += (myData.kills || 0);
+              
+              matchHistoryHTML += `
+                <div class="match-item">
+                    <div>
+                        <b>${escapeHTML(t.title)}</b><br>
+                        <small>Seat: ${myData.seat} | IGN: ${escapeHTML(myData.name)} | UID: ${escapeHTML(myData.uid)}</small>
+                    </div>
+                    <div style="text-align:right">
+                        <small>Fee: ₹${t.entryFee || 0}</small>
+                        ${myData.prizeWon ? `<br><small style="color:#22c55e">Won: ₹${myData.prizeWon}</small>` : ''}
+                    </div>
+                </div>`;
+          }
+      }
+  });
+
+  const card = document.createElement("div");
+  card.className = "user-item";
+  card.innerHTML = `
+    <div class="user-top">
+        <div class="user-info">
+            <b>Model No: ${escapeHTML(modelNo)}</b>
+            <small>${escapeHTML(u.email||"No email")}</small>
+            ${isBanned?'<span class="banned-text">BANNED</span>':""}
+        </div>
+        <div style="text-align:right">
+            <div style="font-size:12px; color:var(--muted)">Current Balance</div>
+            <div class="balance-pill">₹${balance.toFixed(2)}</div>
+        </div>
+    </div>
+    
+    <div class="balance-actions">
+        <input type="number" min="0.01" step="0.01" id="amount_${escapeHTML(u.id)}" placeholder="Amount (₹)">
+        <button class="success" data-action="add" data-id="${escapeHTML(u.id)}">+ ADD MONEY</button>
+        <button class="danger" data-action="deduct" data-id="${escapeHTML(u.id)}">− DEDUCT</button>
+    </div>
+
+    <div class="history-box">
+        <div class="history-grid">
+            <div><div class="history-label">Tournaments</div><div class="history-val">${totalPlayed}</div></div>
+            <div><div class="history-label">Total Kills</div><div class="history-val">${totalKills}</div></div>
+            <div><div class="history-label">Total Spent</div><div class="history-val">₹${totalSpent}</div></div>
+        </div>
+        
+        <div class="row" style="margin-top:10px; margin-bottom:5px;">
+            <div style="font-size:11px; color:var(--muted); font-weight:bold;">MATCH HISTORY:</div>
+            <button class="primary" style="padding:6px 10px; font-size:11px;" onclick="openUserDetails('${u.id}', '${escapeHTML(modelNo)}')">View Details</button>
+        </div>
+        
+        <div class="match-list">
+            ${matchHistoryHTML || "<div style='font-size:12px; color:var(--muted)'>No matches played yet.</div>"}
+        </div>
+    </div>
+
+    <div class="row" style="margin-top:10px">
+        <button class="${isBanned?"secondary":"danger"}" data-action="ban" data-id="${escapeHTML(u.id)}" data-banned="${isBanned}">${isBanned?"UNBAN USER":"BAN USER"}</button>
+    </div>
+  `;
+  $("userList").appendChild(card);
+ });
+}
+
+$("userList").addEventListener("click",async e=>{
+ const btn=e.target.closest("button[data-action]");if(!btn)return;
+ const id=btn.dataset.id,action=btn.dataset.action;
+ if(action==="ban"){const wasBanned=btn.dataset.banned==="true";if(!confirm(`Are you sure you want to ${wasBanned?"unban":"ban"} this user?`))return;btn.disabled=true;try{await updateDoc(doc(db,"users",id),{isBanned:!wasBanned});notify(wasBanned?"User unbanned":"User banned")}catch(err){showError("Ban action failed: "+err.message)}finally{btn.disabled=false}return}
+ const input=$(`amount_${id}`),amount=Number(input?.value);
+ if(!Number.isFinite(amount)||amount<=0){alert("Valid amount enter karein.");return}
+ const adding=action==="add";
+ if(!confirm(`${adding?"Add":"Deduct"} ₹${amount.toFixed(2)} ${adding?"to":"from"} this user's wallet?`))return;
+ btn.disabled=true;btn.textContent=adding?"ADDING...":"DEDUCTING...";
+ try{
+  await runTransaction(db,async tx=>{
+   const ref=doc(db,"users",id),snap=await tx.get(ref);
+   if(!snap.exists())throw new Error("User record not found.");
+   const current=Number(snap.data().walletBalance)||0;
+   const next=adding?current+amount:current-amount;
+   if(!Number.isFinite(next)||next<0)throw new Error("Insufficient wallet balance. Deduction cancelled.");
+   tx.update(ref,{walletBalance:Math.round(next*100)/100,walletUpdatedAt:serverTimestamp()});
+  });
+  input.value="";notify(adding?"Wallet balance increased!":"Wallet balance deducted!");
+ }catch(err){showError("Balance update failed: "+err.message)}
+ finally{btn.disabled=false;btn.textContent=adding?"+ ADD MONEY":"− DEDUCT"}
+});
+
+async function searchByModelNo(){
+ const value=$("searchModelNo").value.trim();
+ if(!value){startUserListener();return}
+ $("userList").innerHTML="<p class='muted'>Searching and loading history...</p>";
+ try{
+  const q=query(collection(db,"users"),where("modelNo","==",value));
+  const result=await getDocs(q);
+  const foundUsers=result.docs.map(d=>({id:d.id,...d.data()}));
+  renderUsers(foundUsers);
+ }catch(e){showError("Search failed: "+e.message)}
+}
+$("searchUserBtn").onclick=searchByModelNo;
+$("searchModelNo").addEventListener("keydown",e=>{if(e.key==="Enter")searchByModelNo()});
+$("showAllUsersBtn").onclick=()=>{$("searchModelNo").value="";startUserListener()};
+
+/* USER DETAILS MODAL */
+window.openUserDetails = (userId, modelNo) => {
+    $("umTitle").textContent = `Member Details - Model No: ${modelNo}`;
+    const content = $("umContent");
+    content.innerHTML = "";
+
+    let matchesHTML = "";
+    allTourneys.forEach(t => {
+        if(t.players) {
+            const pIndex = t.players.findIndex(p => p.userId === userId);
+            if(pIndex !== -1) {
+                const p = t.players[pIndex];
+                const perKill = t.perKill || 0;
+                const booyahPrize = t.booyah || 0;
+                
+                matchesHTML += `
+                    <div class="match-detail-card">
+                        <div class="md-title">${escapeHTML(t.title)}</div>
+                        <div class="md-info">
+                            Game Name: <b>${escapeHTML(p.name)}</b><br>
+                            UID: <b>${escapeHTML(p.uid)}</b><br>
+                            Seat Number: <b>${p.seat}</b><br>
+                            Entry Fee: <b>₹${t.entryFee || 0}</b>
+                            ${p.refunded ? '<br><span style="color:#fbbf24;font-weight:bold;">Refunded</span>' : ''}
+                        </div>
+                        <div class="md-controls">
+                            <span style="font-size:12px; font-weight:bold;">Kills:</span>
+                            <button class="counter-btn" onclick="changeKills('${t.id}', '${p.userId}', -1)">-</button>
+                            <input type="number" class="counter-val" id="kills_${t.id}_${p.userId}" value="${p.kills || 0}" min="0" onchange="updatePrizePreview('${t.id}', '${p.userId}', ${perKill}, ${booyahPrize})">
+                            <button class="counter-btn" onclick="changeKills('${t.id}', '${p.userId}', 1)">+</button>
+                            <span style="font-size:11px; color:var(--muted);">(₹${perKill}/kill)</span>
+                            <button class="booyah-btn ${p.isBooyah ? 'active' : ''}" id="booyah_${t.id}_${p.userId}" onclick="toggleBooyah('${t.id}', '${p.userId}')">BOOYAH (₹${booyahPrize})</button>
+                            <button class="success" onclick="sendPrize('${t.id}', '${p.userId}')">SEND</button>
+                            
+                            ${!p.refunded ? `<button class="warning" onclick="refundEntry('${t.id}', '${p.userId}', ${t.entryFee || 0})">REFUND</button>` : ''}
+                        </div>
+                        <div style="margin-top:8px; font-size:12px; color:#22c55e; font-weight:bold;">
+                            Total Prize: ₹<span id="prize_${t.id}_${p.userId}">${p.prizeWon || 0}</span>
+                            ${p.prizeWon ? ' (Paid)' : ''}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    });
+
+    if(!matchesHTML) content.innerHTML = "<p class='muted'>This user hasn't joined any tournaments yet.</p>";
+    else content.innerHTML = matchesHTML;
+
+    $("userModal").classList.add("active");
+};
+
+window.changeKills = (tId, uId, delta) => {
+    const input = $(`kills_${tId}_${uId}`);
+    let val = Number(input.value) + delta;
+    if(val < 0) val = 0;
+    input.value = val;
+    const t = allTourneys.find(x => x.id === tId);
+    updatePrizePreview(tId, uId, t.perKill || 0, t.booyah || 0);
+};
+
+window.toggleBooyah = (tId, uId) => {
+    $(`booyah_${tId}_${uId}`).classList.toggle("active");
+    const t = allTourneys.find(x => x.id === tId);
+    updatePrizePreview(tId, uId, t.perKill || 0, t.booyah || 0);
+};
+
+window.updatePrizePreview = (tId, uId, perKill, booyahPrize) => {
+    const kills = Number($(`kills_${tId}_${uId}`).value) || 0;
+    const isBooyah = $(`booyah_${tId}_${uId}`).classList.contains("active");
+    const total = (kills * perKill) + (isBooyah ? booyahPrize : 0);
+    $(`prize_${tId}_${uId}`).textContent = total;
+};
+
+window.sendPrize = async (tId, uId) => {
+    const kills = Number($(`kills_${tId}_${uId}`).value) || 0;
+    const isBooyah = $(`booyah_${tId}_${uId}`).classList.contains("active");
+    const t = allTourneys.find(x => x.id === tId);
+    if(!t) return;
+    const totalPrize = (kills * (t.perKill || 0)) + (isBooyah ? (t.booyah || 0) : 0);
+    if(totalPrize <= 0) { alert("Prize amount is 0. Please enter kills or select Booyah."); return; }
+    if(!confirm(`Send ₹${totalPrize} to this player's wallet?\n(Kills: ${kills} x ₹${t.perKill}) + (Booyah: ₹${isBooyah ? t.booyah : 0})`)) return;
+
+    try {
+        await runTransaction(db, async (tx) => {
+            const userRef = doc(db, "users", uId);
+            const userSnap = await tx.get(userRef);
+            if(!userSnap.exists()) throw new Error("User not found in database.");
+            const currentBal = Number(userSnap.data().walletBalance) || 0;
+            tx.update(userRef, { walletBalance: currentBal + totalPrize });
+        });
+        const pIndex = t.players.findIndex(p => p.userId === uId);
+        if(pIndex !== -1) {
+            t.players[pIndex].paid = true;
+            t.players[pIndex].prizeWon = totalPrize;
+            t.players[pIndex].kills = kills;
+            t.players[pIndex].isBooyah = isBooyah;
+            await setDoc(doc(db, "tournaments", tId), { players: t.players }, { merge: true });
+        }
+        alert(`Success! ₹${totalPrize} sent to player's wallet.`);
+        $("userModal").classList.remove("active");
+        startUserListener();
+    } catch(e) { showError("Prize Send Failed: " + e.message); }
+};
+
+/* REFUND ENTRY FEE */
+window.refundEntry = async (tId, uId, feeAmount) => {
+    if(feeAmount <= 0) return alert("No entry fee to refund.");
+    if(!confirm(`Refund ₹${feeAmount} to this user?`)) return;
+
+    try {
+        await runTransaction(db, async (tx) => {
+            const userRef = doc(db, "users", uId);
+            const userSnap = await tx.get(userRef);
+            if(!userSnap.exists()) throw new Error("User not found in database.");
+            const currentBal = Number(userSnap.data().walletBalance) || 0;
+            tx.update(userRef, { walletBalance: currentBal + feeAmount });
+        });
+        
+        const t = allTourneys.find(x => x.id === tId);
+        if(t) {
+            const pIndex = t.players.findIndex(p => p.userId === uId);
+            if(pIndex !== -1) {
+                t.players[pIndex].refunded = true;
+                await setDoc(doc(db, "tournaments", tId), { players: t.players }, { merge: true });
+            }
+        }
+
+        alert(`Success! ₹${feeAmount} refunded to user's wallet.`);
+        $("userModal").classList.remove("active");
+        startUserListener();
+    } catch(e) {
+        showError("Refund Failed: " + e.message);
+    }
+};
+
+/* DEPOSIT REQUESTS */
+function startDepositListener() {
+    if(unsubscribeDeposits) unsubscribeDeposits();
+    $("depositList").innerHTML = "<p class='muted'>Loading requests...</p>";
+    
+    const q = query(collection(db, "deposit_requests"), where("status", "==", "pending"));
+    unsubscribeDeposits = onSnapshot(q, snap => {
+        allDeposits = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderDeposits(allDeposits);
+    }, e => showError("DEPOSIT SYNC ERROR: " + e.message));
+}
+
+function renderDeposits(deposits) {
+    $("depositList").innerHTML = "";
+    $("depCount").textContent = `${deposits.length} pending`;
+    
+    if(deposits.length === 0) {
+        $("depositList").innerHTML = "<p class='empty'>No pending deposit requests.</p>";
+        return;
+    }
+
+    deposits.sort((a,b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+
+    deposits.forEach(d => {
+        const user = allUsers.find(u => u.id === d.userId);
+        const modelNo = user ? (user.modelNo || "N/A") : "Unknown";
+        const time = d.createdAt ? new Date(d.createdAt.toMillis()).toLocaleString() : "Just now";
+        
+        const div = document.createElement("div");
+        div.className = "dep-req-item";
+        div.innerHTML = `
+            <div class="dr-top">
+                <div class="dr-amount">₹${d.amount}</div>
+                <div class="dr-status pending">PENDING</div>
+            </div>
+            <div class="dr-info">
+                User: <b>${escapeHTML(d.email)}</b> (Model: ${modelNo})<br>
+                Time: ${time}
+            </div>
+            <div class="dr-actions">
+                <button class="danger" onclick="handleDeposit('${d.id}', '${d.userId}', ${d.amount}, 'reject')">REJECT</button>
+                <button class="success" onclick="handleDeposit('${d.id}', '${d.userId}', ${d.amount}, 'approve')">APPROVE (YES)</button>
+            </div>
+        `;
+        $("depositList").appendChild(div);
+    });
+}
+
+window.handleDeposit = async (reqId, userId, amount, action) => {
+    const isApprove = action === 'approve';
+    if(!confirm(`Are you sure you want to ${isApprove ? 'APPROVE' : 'REJECT'} this deposit of ₹${amount}?`)) return;
+
+    try {
+        if(isApprove) {
+            await runTransaction(db, async (tx) => {
+                const userRef = doc(db, "users", userId);
+                const userSnap = await tx.get(userRef);
+                if(!userSnap.exists()) throw new Error("User not found.");
+                const currentBal = Number(userSnap.data().walletBalance) || 0;
+                tx.update(userRef, { walletBalance: currentBal + amount });
+            });
+        }
+
+        await updateDoc(doc(db, "deposit_requests", reqId), {
+            status: isApprove ? 'approved' : 'rejected',
+            updatedAt: serverTimestamp()
+        });
+
+        notify(isApprove ? "Deposit Approved & Wallet Credited!" : "Deposit Rejected.");
+        
+    } catch(e) {
+        showError("Action Failed: " + e.message);
+    }
+};
+
+/* WITHDRAWAL REQUESTS */
+function startWithdrawalListener() {
+    if(unsubscribeWithdrawals) unsubscribeWithdrawals();
+    $("withdrawalList").innerHTML = "<p class='muted'>Loading requests...</p>";
+    
+    const q = query(collection(db, "withdraw_requests"), where("status", "==", "pending"));
+    unsubscribeWithdrawals = onSnapshot(q, snap => {
+        allWithdrawals = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderWithdrawals(allWithdrawals);
+    }, e => showError("WITHDRAWAL SYNC ERROR: " + e.message));
+}
+
+function renderWithdrawals(withdrawals) {
+    $("withdrawalList").innerHTML = "";
+    $("wdCount").textContent = `${withdrawals.length} pending`;
+    
+    if(withdrawals.length === 0) {
+        $("withdrawalList").innerHTML = "<p class='empty'>No pending withdrawal requests.</p>";
+        return;
+    }
+
+    withdrawals.sort((a,b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+
+    withdrawals.forEach(d => {
+        const time = d.createdAt ? new Date(d.createdAt.toMillis()).toLocaleString() : "Just now";
+        const details = d.methodDetails || {};
+        
+        let detailsHtml = "";
+        if(d.method === "UPI") {
+            detailsHtml = `
+                <div><b>UPI ID:</b> ${escapeHTML(details.upi || 'N/A')}</div>
+                <div><b>Holder Name:</b> ${escapeHTML(details.name || 'N/A')}</div>
+            `;
+        } else {
+            detailsHtml = `
+                <div><b>Bank Name:</b> ${escapeHTML(details.bank || 'N/A')}</div>
+                <div><b>A/C No:</b> ${escapeHTML(details.ac || 'N/A')}</div>
+                <div><b>IFSC Code:</b> ${escapeHTML(details.ifsc || 'N/A')}</div>
+                <div><b>Holder Name:</b> ${escapeHTML(details.name || 'N/A')}</div>
+            `;
+        }
+        
+        const div = document.createElement("div");
+        div.className = "req-item";
+        div.innerHTML = `
+            <div class="req-top">
+                <div class="req-amount">₹${d.amount}</div>
+                <div class="dr-status pending">PENDING</div>
+            </div>
+            <div class="req-info">
+                User: <b>${escapeHTML(d.email)}</b><br>
+                Method: <b>${d.method}</b><br>
+                ${detailsHtml}
+                Time: ${time}
+            </div>
+            <div class="req-actions">
+                <button class="danger" onclick="openRejectModal('${d.id}')">REJECT</button>
+                <button class="success" onclick="handleWithdrawal('${d.id}', 'approve')">COMPLETE (YES)</button>
+            </div>
+        `;
+        $("withdrawalList").appendChild(div);
+    });
+}
+
+window.openRejectModal = (id) => {
+    currentRejectId = id;
+    $("rejectReason").value = "";
+    $("rejectModal").classList.add("active");
+};
+
+window.confirmReject = async () => {
+    const reason = $("rejectReason").value.trim();
+    if(!reason) return alert("Please enter a reason");
+
+    try {
+        const docRef = doc(db, "withdraw_requests", currentRejectId);
+        const snap = await getDoc(docRef);
+        const data = snap.data();
+
+        await runTransaction(db, async (tx) => {
+            const userRef = doc(db, "users", data.userId);
+            const userSnap = await tx.get(userRef);
+            if(userSnap.exists()) {
+                const currentBal = Number(userSnap.data().walletBalance) || 0;
+                tx.update(userRef, { walletBalance: currentBal + data.amount });
+            }
+        });
+
+        await updateDoc(docRef, {
+            status: 'rejected',
+            adminMsg: reason,
+            updatedAt: serverTimestamp()
+        });
+
+        $("rejectModal").classList.remove("active");
+        notify("Withdrawal Rejected & Refunded.");
+    } catch(e) {
+        showError("Failed: " + e.message);
+    }
+};
+
+window.handleWithdrawal = async (id, action) => {
+    if(!confirm("Are you sure you want to mark this withdrawal as COMPLETE?")) return;
+
+    try {
+        await updateDoc(doc(db, "withdraw_requests", id), {
+            status: 'approved',
+            updatedAt: serverTimestamp()
+        });
+        notify("Withdrawal Completed!");
+    } catch(e) {
+        showError("Failed: " + e.message);
+    }
+};
+</script>
+</body>
+</html>

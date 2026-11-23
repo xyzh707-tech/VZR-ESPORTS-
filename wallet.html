@@ -1,0 +1,680 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>VZR ESPORTS | Account</title>
+
+<style>
+:root {
+    --bg:#050505;
+    --panel:rgba(20,21,28,.7);
+    --line:rgba(255,255,255,.1);
+    --red:#ed2638;
+    --red-hover:#c91e2d;
+    --text:#f5f5f7;
+    --muted:#9ca3af;
+}
+* {
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:'Inter','Segoe UI',system-ui,sans-serif;
+    -webkit-tap-highlight-color:transparent;
+}
+body {
+    background:var(--bg);
+    color:var(--text);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    padding:20px;
+    position:relative;
+    overflow:hidden;
+}
+.glow-1 {
+    position:absolute;
+    top:-10%;
+    left:-10%;
+    width:300px;
+    height:300px;
+    background:rgba(237,38,56,.15);
+    filter:blur(100px);
+    border-radius:50%;
+    z-index:0;
+}
+.glow-2 {
+    position:absolute;
+    bottom:-10%;
+    right:-10%;
+    width:300px;
+    height:300px;
+    background:rgba(237,38,56,.1);
+    filter:blur(100px);
+    border-radius:50%;
+    z-index:0;
+}
+.brand-title {
+    font-size:28px;
+    font-weight:900;
+    letter-spacing:3px;
+    margin-bottom:30px;
+    z-index:1;
+    text-align:center;
+}
+.brand-title span {color:var(--red);}
+.auth-card {
+    background:var(--panel);
+    backdrop-filter:blur(20px);
+    -webkit-backdrop-filter:blur(20px);
+    border:1px solid var(--line);
+    padding:35px 25px;
+    border-radius:24px;
+    width:100%;
+    max-width:400px;
+    box-shadow:0 25px 50px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,255,255,.1);
+    position:relative;
+    z-index:1;
+}
+.auth-tabs {
+    display:flex;
+    margin-bottom:30px;
+    background:rgba(0,0,0,.4);
+    border-radius:12px;
+    padding:5px;
+}
+.tab-btn {
+    flex:1;
+    padding:12px;
+    background:transparent;
+    border:none;
+    color:var(--muted);
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    border-radius:8px;
+    transition:.3s;
+}
+.tab-btn.active {
+    color:var(--text);
+    background:rgba(255,255,255,.08);
+    box-shadow:0 4px 15px rgba(0,0,0,.2);
+}
+.input-group {
+    margin-bottom:18px;
+    position:relative;
+}
+.input-wrapper {
+    position:relative;
+    display:flex;
+    align-items:center;
+}
+.input-wrapper input {
+    width:100%;
+    padding:16px 45px 16px 20px;
+    background:rgba(0,0,0,.5);
+    border:1px solid var(--line);
+    color:white;
+    border-radius:12px;
+    font-size:14px;
+    outline:none;
+    transition:.3s;
+    font-weight:500;
+}
+.input-wrapper input:focus {
+    border-color:var(--red);
+    box-shadow:0 0 0 3px rgba(237,38,56,.15);
+}
+.input-wrapper input::placeholder {
+    color:#666;
+    font-weight:400;
+}
+.eye-btn {
+    position:absolute;
+    right:15px;
+    background:none;
+    border:none;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--muted);
+}
+.eye-btn svg {
+    width:20px;
+    height:20px;
+    fill:currentColor;
+}
+.pass-req {
+    font-size:11px;
+    margin-top:8px;
+    display:none;
+    padding-left:5px;
+    font-weight:600;
+}
+.pass-req.active {
+    display:block;
+    color:#ff4d4d;
+}
+.pass-req.valid {
+    display:block;
+    color:#22c55e;
+}
+.auth-error {
+    background:rgba(69,28,37,.8);
+    color:#ff9da7;
+    border:1px solid #7a2d3c;
+    padding:12px;
+    border-radius:10px;
+    font-size:13px;
+    font-weight:600;
+    margin-bottom:20px;
+    text-align:center;
+    display:none;
+    overflow-wrap:anywhere;
+}
+.btn-main {
+    width:100%;
+    padding:16px;
+    background:var(--red);
+    color:white;
+    border:none;
+    border-radius:12px;
+    font-weight:700;
+    font-size:15px;
+    cursor:pointer;
+    transition:.3s;
+    margin-top:10px;
+    box-shadow:0 8px 20px rgba(237,38,56,.3);
+}
+.btn-main:disabled {
+    opacity:.6;
+    cursor:not-allowed;
+    box-shadow:none;
+}
+.btn-main:active {
+    background:var(--red-hover);
+    transform:scale(.98);
+}
+.hidden {display:none!important;}
+</style>
+</head>
+
+<body>
+
+<div class="glow-1"></div>
+<div class="glow-2"></div>
+
+<div class="brand-title">VZR <span>ESPORTS</span></div>
+
+<div class="auth-card" id="authSection">
+
+    <div class="auth-tabs">
+        <button class="tab-btn" id="tabSignup"
+        onclick="switchTab('signup')">Sign Up</button>
+
+        <button class="tab-btn active" id="tabSignin"
+        onclick="switchTab('signin')">Sign In</button>
+    </div>
+
+    <div class="auth-error" id="authError"></div>
+
+    <!-- SIGNUP -->
+    <div id="signupForm" class="hidden">
+
+        <div class="input-group">
+            <div class="input-wrapper">
+                <input type="email" id="suEmail"
+                placeholder="Email Address" autocomplete="email">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <div class="input-wrapper">
+                <input type="password" id="suPassword"
+                placeholder="Create Password" autocomplete="new-password">
+
+                <button class="eye-btn"
+                onclick="togglePass('suPassword',this)">
+                    <svg viewBox="0 0 24 24">
+                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="pass-req" id="passReq">
+                Password must contain letters and numbers
+            </div>
+        </div>
+
+        <div class="input-group">
+            <div class="input-wrapper">
+                <input type="password" id="suConfirm"
+                placeholder="Confirm Password"
+                autocomplete="new-password">
+
+                <button class="eye-btn"
+                onclick="togglePass('suConfirm',this)">
+                    <svg viewBox="0 0 24 24">
+                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <button class="btn-main" id="signupBtn"
+        onclick="handleSignup()">Create Account</button>
+
+    </div>
+
+    <!-- SIGNIN -->
+    <div id="signinForm">
+
+        <div class="input-group">
+            <div class="input-wrapper">
+                <input type="email" id="siEmail"
+                placeholder="Email Address"
+                autocomplete="email">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <div class="input-wrapper">
+                <input type="password" id="siPassword"
+                placeholder="Password"
+                autocomplete="current-password">
+
+                <button class="eye-btn"
+                onclick="togglePass('siPassword',this)">
+                    <svg viewBox="0 0 24 24">
+                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <button class="btn-main" id="signinBtn"
+        onclick="handleSignin()">Login</button>
+
+    </div>
+</div>
+
+<script type="module">
+
+import {
+    initializeApp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+    getAuth,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+    getFirestore,
+    doc,
+    getDoc,
+    setDoc,
+    runTransaction,
+    serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+
+const firebaseConfig = {
+    apiKey:"AIzaSyDPIjZjIyUdQBUEni3eaaAa3TWTAit_8y4",
+    authDomain:"freefire-tournament-45058.firebaseapp.com",
+    projectId:"freefire-tournament-45058",
+    storageBucket:"freefire-tournament-45058.firebasestorage.app",
+    messagingSenderId:"786635453008",
+    appId:"1:786635453008:web:88ee24e0b02bf846619755"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const $ = id => document.getElementById(id);
+
+
+/* TAB SWITCH */
+
+window.switchTab = (tab) => {
+
+    $("authError").style.display = "none";
+
+    if(tab === "signup") {
+
+        $("tabSignup").classList.add("active");
+        $("tabSignin").classList.remove("active");
+
+        $("signupForm").classList.remove("hidden");
+        $("signinForm").classList.add("hidden");
+
+    } else {
+
+        $("tabSignin").classList.add("active");
+        $("tabSignup").classList.remove("active");
+
+        $("signinForm").classList.remove("hidden");
+        $("signupForm").classList.add("hidden");
+    }
+};
+
+
+/* PASSWORD EYE */
+
+window.togglePass = (inputId,btn) => {
+
+    const input = $(inputId);
+    const svg = btn.querySelector("svg");
+
+    if(input.type === "password") {
+
+        input.type = "text";
+
+        svg.innerHTML = `
+        <path d="M2 4.27 3.27 3 21 20.73 19.73 22l-2.4-2.4A12 12 0 0 1 12 20C7 20 2.73 16.89 1 12a12 12 0 0 1 4-5.16L2 4.27zM12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l-6.47-6.47C10.74 7.13 11.35 7 12 7z"/>`;
+
+    } else {
+
+        input.type = "password";
+
+        svg.innerHTML = `
+        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>`;
+    }
+};
+
+
+/* PASSWORD VALIDATION */
+
+$("suPassword").addEventListener("input",e => {
+
+    const val = e.target.value;
+    const req = $("passReq");
+
+    if(val.length === 0) {
+        req.className = "pass-req";
+    }
+
+    else if(/[a-zA-Z]/.test(val) && /[0-9]/.test(val)) {
+        req.className = "pass-req valid";
+        req.textContent = "✓ Password requirements met";
+    }
+
+    else {
+        req.className = "pass-req active";
+        req.textContent = "✗ Must contain Letters & Numbers";
+    }
+});
+
+
+/* UNIQUE MODEL NUMBER GENERATOR */
+
+async function generateModelNumber() {
+
+    const counterRef = doc(db,"systemCounters","userModelNo");
+
+    return await runTransaction(db,async(transaction) => {
+
+        const counterSnap = await transaction.get(counterRef);
+
+        let nextNumber = 1;
+
+        if(counterSnap.exists()) {
+            nextNumber =
+                (counterSnap.data().lastNumber || 0) + 1;
+        }
+
+        transaction.set(counterRef,{
+            lastNumber:nextNumber
+        });
+
+        return String(nextNumber).padStart(3,"0");
+
+    });
+}
+
+
+/* SIGNUP */
+
+window.handleSignup = async () => {
+
+    const email = $("suEmail").value.trim().toLowerCase();
+    const pass = $("suPassword").value;
+    const confirm = $("suConfirm").value;
+
+    $("authError").style.display = "none";
+
+    if(!email || !pass || !confirm) {
+        showError("All fields are required!");
+        return;
+    }
+
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showError("Please enter a valid email address.");
+        return;
+    }
+
+    if(pass !== confirm) {
+        showError("Passwords do not match!");
+        return;
+    }
+
+    if(!/[a-zA-Z]/.test(pass) || !/[0-9]/.test(pass)) {
+        showError("Password must contain letters and numbers.");
+        return;
+    }
+
+    if(pass.length < 6) {
+        showError("Password must be at least 6 characters long.");
+        return;
+    }
+
+    $("signupBtn").disabled = true;
+    $("signupBtn").textContent = "Creating Account...";
+
+    let accountCreated = false;
+
+    try {
+
+        const userCred = await createUserWithEmailAndPassword(
+            auth,email,pass
+        );
+
+        accountCreated = true;
+
+        const modelNo = await generateModelNumber();
+
+        await setDoc(doc(db,"users",userCred.user.uid),{
+
+            email:email,
+
+            modelNo:modelNo,
+
+            walletBalance:0,
+
+            isBanned:false,
+
+            totalMatches:0,
+
+            totalKills:0,
+
+            totalWinnings:0,
+
+            createdAt:serverTimestamp()
+
+        });
+
+        window.location.href = "lobby.html";
+
+    }
+
+    catch(e) {
+
+        console.error("Signup error:",e);
+
+        if(accountCreated) {
+
+            showError(
+                "Account created, but profile setup failed. Please contact admin before retrying."
+            );
+
+            $("signupBtn").disabled = false;
+            $("signupBtn").textContent = "Retry Profile Setup";
+
+        } else {
+
+            if(e.code === "auth/email-already-in-use") {
+                showError("This email is already registered. Please Sign In.");
+            }
+
+            else if(e.code === "auth/weak-password") {
+                showError("Password is too weak.");
+            }
+
+            else {
+                showError(e.message);
+            }
+
+            $("signupBtn").disabled = false;
+            $("signupBtn").textContent = "Create Account";
+        }
+    }
+};
+
+
+/* SIGNIN */
+
+window.handleSignin = async () => {
+
+    const email = $("siEmail").value.trim().toLowerCase();
+    const pass = $("siPassword").value;
+
+    $("authError").style.display = "none";
+
+    if(!email || !pass) {
+        showError("Please fill in both fields!");
+        return;
+    }
+
+    $("signinBtn").disabled = true;
+    $("signinBtn").textContent = "Logging in...";
+
+    try {
+
+        const userCred = await signInWithEmailAndPassword(
+            auth,email,pass
+        );
+
+        const userSnap = await getDoc(
+            doc(db,"users",userCred.user.uid)
+        );
+
+        if(!userSnap.exists()) {
+
+            await signOut(auth);
+
+            showError("Account profile not found. Contact admin.");
+
+            $("signinBtn").disabled = false;
+            $("signinBtn").textContent = "Login";
+
+            return;
+        }
+
+        const userData = userSnap.data();
+
+        if(userData.isBanned === true) {
+
+            await signOut(auth);
+
+            showError("Your account has been suspended. Contact admin.");
+
+            $("signinBtn").disabled = false;
+            $("signinBtn").textContent = "Login";
+
+            return;
+        }
+
+        window.location.href = "lobby.html";
+
+    }
+
+    catch(e) {
+
+        console.error(e);
+
+        if(e.code === "auth/invalid-credential") {
+            showError("Incorrect email or password.");
+        }
+
+        else if(e.code === "auth/too-many-requests") {
+            showError("Too many attempts. Try again later.");
+        }
+
+        else {
+            showError("Login failed. Check your credentials.");
+        }
+
+        $("signinBtn").disabled = false;
+        $("signinBtn").textContent = "Login";
+    }
+};
+
+
+/* ERROR MESSAGE */
+
+function showError(msg) {
+
+    const box = $("authError");
+
+    box.textContent = msg;
+    box.style.display = "block";
+}
+
+
+/* AUTO REDIRECT */
+
+onAuthStateChanged(auth,async(user) => {
+
+    if(!user) return;
+
+    try {
+
+        const userSnap = await getDoc(
+            doc(db,"users",user.uid)
+        );
+
+        if(!userSnap.exists()) {
+            await signOut(auth);
+            return;
+        }
+
+        if(userSnap.data().isBanned === true) {
+            await signOut(auth);
+            showError("Your account has been suspended.");
+            return;
+        }
+
+        if(window.location.pathname.endsWith("account.html")) {
+            window.location.href = "lobby.html";
+        }
+
+    }
+
+    catch(e) {
+        console.error("Auth check:",e);
+    }
+
+});
+
+</script>
+
+</body>
+</html>

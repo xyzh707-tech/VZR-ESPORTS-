@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#09090b">
+<title>VZR ESPORTS | Lobby</title>
+
+<style>
+:root {
+  --bg:#09090b;
+  --red:#ed2638;
+  --white:#f5f5f7;
+  --muted:#9999a3;
+  --line:#292930;
+  --panel:#17171c;
+}
+
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { margin:0; min-height:100%; background:var(--bg); color:var(--white); font-family:Inter,system-ui,Arial,sans-serif; }
+body { min-height:100vh; }
+button { font:inherit; cursor:pointer; outline: none; }
+button:active { filter:brightness(.82); transform:scale(.985); }
+.hidden { display:none!important; }
+
+.app { max-width:1100px; margin:auto; padding:20px 22px 40px; }
+.topbar { height:64px; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.lefthead { display:flex; align-items:center; gap:15px; }
+
+.iconbtn { border:1px solid var(--line); background:var(--panel); color:white; width:43px; height:43px; border-radius:13px; font-size:22px; }
+.brand { font-weight:900; letter-spacing:1.6px; font-size:19px; }
+.brand span { color:var(--red); }
+
+/* WALLET + PLUS (COMBINED) */
+.wallet-combined {
+  background:var(--panel); border:1px solid var(--line); color:white;
+  padding:8px 10px 8px 15px; border-radius:14px;
+  display:flex; align-items:center; gap:8px; text-decoration:none;
+  font-size:14px; font-weight:bold; cursor:pointer;
+}
+.wallet-combined:active { border-color: var(--red); }
+.wallet-combined .coin { color:#fbbf24; }
+.wallet-combined .divider { width:1px; height:16px; background:var(--line); }
+.wallet-combined .plus-btn { font-size:18px; font-weight:bold; padding-right: 2px;}
+
+/* BANNER SLIDER */
+.hero { position:relative; margin-top:24px; border:1px solid #303038; border-radius:20px; overflow:hidden; background:var(--panel); box-shadow:0 18px 45px #0008; touch-action:pan-y; }
+.slides { display:flex; transition:transform .55s cubic-bezier(.2,.8,.2,1); will-change:transform; }
+.slide { 
+  min-width:100%; height:260px; position:relative; 
+  background-color:#1b1b20; background-size:cover; background-position:center; background-repeat:no-repeat; 
+  display:flex; align-items:flex-end; padding:25px; user-select:none; 
+}
+.slide-copy { position:relative; z-index:1; max-width:480px; pointer-events:auto; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+.slide-copy .eyebrow,
+.slide-copy h1,
+.slide-copy p { pointer-events:none; }
+.eyebrow { color:#ff6572; text-transform:uppercase; letter-spacing:2px; font-size:11px; font-weight:900; }
+.slide h1 { font-size:clamp(24px,4vw,38px); line-height:1.05; margin:8px 0; }
+.slide p { margin:0; color:#d0d0d5; font-size:13px; }
+
+/* BANNER CTA BUTTON */
+.banner-btn {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin-top:14px;
+  background:var(--red);
+  color:#fff;
+  text-decoration:none;
+  padding:10px 22px;
+  border-radius:9px;
+  font-weight:800;
+  font-size:13px;
+  letter-spacing:.4px;
+  box-shadow:0 8px 20px rgba(237,38,56,.35);
+  transition:transform .18s, filter .18s, box-shadow .18s;
+  pointer-events:auto;
+}
+.banner-btn:hover { filter:brightness(1.08); box-shadow:0 10px 24px rgba(237,38,56,.5); }
+.banner-btn:active { transform:scale(.96); filter:brightness(.9); }
+.banner-btn::after { content:"→"; font-size:15px; transition:transform .18s; }
+.banner-btn:hover::after { transform:translateX(3px); }
+
+.dots { position:absolute; z-index:2; right:20px; bottom:19px; display:flex; gap:7px; }
+.dot { width:7px; height:7px; border-radius:9px; background:#ffffff70; border:0; padding:0; }
+.dot.active { width:23px; background:var(--red); }
+
+/* WELCOME */
+.welcome { margin:30px 0 17px; }
+.welcome small { color:var(--red); font-weight:800; letter-spacing:1.7px; }
+.welcome h2 { margin:7px 0 5px; font-size:25px; }
+.welcome p { margin:0; color:var(--muted); font-size:14px; }
+.sectionhead { display:flex; align-items:center; justify-content:space-between; margin:27px 0 13px; }
+.sectionhead h3 { margin:0; font-size:16px; }
+.sectionhead span { font-size:12px; color:var(--muted); }
+
+/* TOURNAMENT BUTTONS */
+.tiles { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:13px; }
+.tile {
+  background-color:#1b1b22; border:1px solid var(--line); border-radius:17px;
+  min-height:155px; position:relative; overflow:hidden; cursor:pointer;
+  text-align:left; color:white; width:100%; display:flex; align-items:flex-end;
+  text-decoration:none; background-size:cover; background-position:center; background-repeat:no-repeat; transition:.2s;
+}
+.tile:active { transform:scale(.98); border-color:var(--red); }
+.tile-content { position:relative; z-index:1; padding:17px; width:100%; text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
+.tile h4 { margin:0 0 5px; font-size:16px; }
+.tile p { margin:0; color:#c3c3cb; font-size:12px; }
+
+.footer { text-align:center; color:#696972; font-size:11px; letter-spacing:1.6px; margin:38px 0 0; }
+
+/* SIDE MENU */
+.scrim { position:fixed; inset:0; background:#000a; opacity:0; visibility:hidden; transition:.25s; z-index:10; }
+.drawer { position:fixed; z-index:11; top:0; right:0; height:100dvh; width:min(50vw,390px); min-width:280px; background:#111115; border-left:1px solid #34343b; transform:translateX(102%); transition:transform .32s; padding:23px 19px; box-shadow:-25px 0 70px #0008; overflow-y:auto; }
+.drawer.open { transform:translateX(0); }
+.scrim.open { opacity:1; visibility:visible; }
+
+.drawerhead { display:flex; justify-content:space-between; align-items:center; padding-bottom:22px; border-bottom:1px solid var(--line); }
+.drawerhead strong { font-size:17px; letter-spacing:1px; }
+.close { background:#25252c; border:0; color:white; border-radius:10px; width:37px; height:37px; font-size:21px; }
+.menu-label { font-size:10px; color:#777782; letter-spacing:1.8px; font-weight:800; margin:24px 8px 12px; }
+.menu-list { display:grid; gap:9px; }
+.menu-item { display:flex; align-items:center; gap:13px; width:100%; padding:14px 13px; border:1px solid #2a2a32; background:#19191f; color:#f4f4f6; border-radius:12px; text-align:left; font-weight:650; text-decoration: none;}
+.menu-item .ico { color:var(--muted); }
+.logout-btn { border-color:#451c25; background:#2a1116; color:#ff9da7; }
+
+/* TOAST */
+.toast { position:fixed; left:50%; bottom:24px; transform:translate(-50%,20px); opacity:0; pointer-events:none; z-index:20; background:#24242b; border:1px solid #45454e; color:white; padding:12px 17px; border-radius:12px; font-size:13px; transition:.25s; max-width:90vw; text-align:center; }
+.toast.show { opacity:1; transform:translate(-50%,0); }
+
+/* LOGOUT MODAL */
+.modal-overlay { position:fixed; inset:0; background:#000d; display:none; align-items:center; justify-content:center; z-index:100; padding:20px; }
+.modal-overlay.active { display:flex; }
+.modal-box { background:var(--panel); border:1px solid var(--line); border-radius:12px; width:100%; max-width:350px; padding:25px; text-align:center; }
+.modal-title { font-size:18px; font-weight:bold; margin-bottom:10px; }
+.modal-text { font-size:14px; color:var(--muted); margin-bottom:20px; }
+.modal-actions { display:flex; gap:10px; }
+.modal-btn { flex:1; padding:12px; border-radius:8px; border:none; font-weight:bold; }
+.btn-no { background:#292c36; color:white; }
+.btn-yes { background:var(--red); color:white; }
+
+/* ===== CUSTOMER SERVICE MODAL (CENTER + SCROLL LOCK) ===== */
+.cs-overlay {
+  position:fixed;
+  inset:0;
+  background:#000c;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:200;
+  padding:20px;
+  overscroll-behavior:contain;
+}
+.cs-overlay.active { display:flex; }
+.cs-popup {
+  width:100%;
+  max-width:300px;
+  background:#17171c;
+  border:1px solid #34343b;
+  border-radius:16px;
+  box-shadow:0 25px 70px #000d;
+  overflow:hidden;
+  animation:csPop .28s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes csPop {
+  from { transform:scale(.9); opacity:0; }
+  to   { transform:scale(1);  opacity:1; }
+}
+.cs-popup-head {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:13px 15px;
+  border-bottom:1px solid var(--line);
+  background:#1d1d24;
+}
+.cs-popup-head strong {
+  font-size:14px;
+  letter-spacing:.5px;
+  color:#f5f5f7;
+}
+.cs-popup-close {
+  background:#292930;
+  border:0;
+  color:#fff;
+  width:30px;
+  height:30px;
+  border-radius:8px;
+  font-size:18px;
+  line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.cs-popup-close:active { background:var(--red); }
+.cs-popup-body {
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.cs-popup-body p {
+  margin:0 0 4px;
+  font-size:11px;
+  color:var(--muted);
+  letter-spacing:.4px;
+  text-transform:uppercase;
+  font-weight:700;
+}
+.cs-item {
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:12px 13px;
+  border-radius:11px;
+  background:#1f1f27;
+  border:1px solid #2a2a32;
+  color:#f5f5f7;
+  text-decoration:none;
+  font-size:13px;
+  font-weight:600;
+  transition:.18s;
+}
+.cs-item:active { transform:scale(.97); border-color:var(--red); }
+.cs-item .ico {
+  width:30px;
+  height:30px;
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:15px;
+  flex-shrink:0;
+}
+.cs-item.whatsapp .ico { background:#0f3a26; color:#25d366; }
+.cs-item small {
+  display:block;
+  font-size:10px;
+  font-weight:500;
+  color:#25d366;
+  margin-top:2px;
+}
+
+body.menu-open,
+body.cs-open { overflow:hidden; overscroll-behavior:none; }
+
+@media(max-width:600px) {
+  .app { padding:13px 14px 30px; }
+  .brand { font-size:16px; }
+  .topbar { height:55px; }
+  .slide { height:215px; padding:19px; }
+  .hero { margin-top:17px; }
+  .welcome { margin-top:25px; }
+  .drawer { width:82vw; min-width:0; }
+  .tiles { gap:10px; }
+  .tile { min-height:140px; }
+  .cs-popup { max-width:280px; }
+  .banner-btn { padding:9px 18px; font-size:12px; margin-top:10px; }
+}
+</style>
+</head>
+
+<body>
+
+<main class="app">
+
+<header class="topbar">
+  <div class="lefthead">
+    <button class="iconbtn" id="menuOpen">☰</button>
+    <div class="brand">VZR <span>ESPORTS</span></div>
+  </div>
+
+  <!-- COMBINED WALLET BUTTON -->
+  <a href="deposit.html" class="wallet-combined">
+    <span class="coin">₹</span> <span id="walletBalance">0</span>
+    <span class="divider"></span>
+    <span class="plus-btn">+</span>
+  </a>
+</header>
+
+<!-- TOP BANNERS -->
+<section class="hero" id="hero">
+  <div class="slides" id="slides">
+    <div class="slide"><div class="slide-copy">Loading banners...</div></div>
+  </div>
+  <div class="dots" id="dots"></div>
+</section>
+
+<!-- WELCOME -->
+<section class="welcome">
+  <small>PLAYER LOBBY</small>
+  <h2>Welcome to VZR</h2>
+  <p>Your competitive space starts here.</p>
+</section>
+
+<!-- TOURNAMENT BUTTONS -->
+<div class="sectionhead">
+  <h3>Explore</h3>
+  <span>VZR COMMUNITY</span>
+</div>
+
+<section class="tiles" id="tileGrid"></section>
+
+<div class="footer">
+  VZR ESPORTS • PLAY TO COMPETE
+</div>
+
+</main>
+
+<!-- SIDE MENU -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawerhead">
+    <strong>VZR <span style="color:#ed2638">MENU</span></strong>
+    <button class="close" id="menuClose">×</button>
+  </div>
+
+  <div class="menu-label">ACCOUNT</div>
+  <nav class="menu-list">
+    <button class="menu-item" data-action="Profile"><span class="ico">›</span>Profile</button>
+    <a href="history.html" class="menu-item"><span class="ico">›</span>History</a>
+    <a href="deposit.html" class="menu-item"><span class="ico">›</span>Deposit</a>
+    <a href="withdraw.html" class="menu-item"><span class="ico">›</span>Withdrawal</a>
+    <button class="menu-item" id="customerServiceBtn"><span class="ico">›</span>Customer Service</button>
+    <button class="menu-item logout-btn hidden" id="logoutBtn"><span class="ico">›</span>Logout</button>
+  </nav>
+</aside>
+
+<!-- LOGOUT MODAL -->
+<div class="modal-overlay" id="logoutModal">
+  <div class="modal-box">
+    <div class="modal-title">Logout</div>
+    <div class="modal-text">Are you sure you want to log out?</div>
+    <div class="modal-actions">
+      <button class="modal-btn btn-no" onclick="closeLogoutModal()">No</button>
+      <button class="modal-btn btn-yes" onclick="confirmLogout()">Yes</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CUSTOMER SERVICE MODAL (CENTER) ===== -->
+<div class="cs-overlay" id="csOverlay">
+  <div class="cs-popup" id="csPopup">
+    <div class="cs-popup-head">
+      <strong>Customer Service</strong>
+      <button class="cs-popup-close" id="csPopupClose" aria-label="Close">×</button>
+    </div>
+    <div class="cs-popup-body">
+      <p>Available Service</p>
+      <a href="https://wa.me/918976629962?text=Hello%20VZR%20ESPORTS%20Support%20Team%2C%0A%0AI%20would%20like%20to%20connect%20with%20your%20customer%20service%20regarding%20my%20account.%20Kindly%20assist%20me%20at%20your%20earliest%20convenience.%0A%0AThank%20you."
+         target="_blank" rel="noopener noreferrer" class="cs-item whatsapp">
+        <span class="ico">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
+          </svg>
+        </span>
+        <span>
+          WhatsApp
+          <small>Chat with us</small>
+        </span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const firebaseConfig = { apiKey: "AIzaSyDPIjZjIyUdQBUEni3eaaAa3TWTAit_8y4", authDomain: "freefire-tournament-45058.firebaseapp.com", projectId: "freefire-tournament-45058", storageBucket: "freefire-tournament-45058.firebasestorage.app", messagingSenderId: "786635453008", appId: "1:786635453008:web:88ee24e0b02bf846619755" };
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+const $ = id => document.getElementById(id);
+const slidesEl = $("slides");
+const dotsEl = $("dots");
+const tileGrid = $("tileGrid");
+
+const FALLBACK = {
+  banners: [
+    { title:"BANNER 1", description:"Compete with focus. Play with your squad.", eyebrow:"VZR ESPORTS" },
+    { title:"BANNER 2", description:"Stay ready for upcoming competitions.", eyebrow:"FIND YOUR SQUAD" },
+    { title:"BANNER 3", description:"Make every match count.", eyebrow:"PLAY • IMPROVE • COMPETE" },
+    { title:"BANNER 4", description:"One community. One competitive spirit.", eyebrow:"VZR ESPORTS" },
+    { title:"BANNER 5", description:"The biggest battle awaits.", eyebrow:"SEASON 1" }
+  ],
+  tiles: [
+    { title:"Tournaments", description:"Discover competitive events", link:"tournament.html" },
+    { title:"My Matches", description:"Keep track of your matches", link:"history.html" },
+    { title:"Announcements", description:"Latest community updates", link:"announcements.html" },
+    { title:"Leaderboard", description:"See community rankings", link:"leaderboard.html" },
+    { title:"Profile", description:"Your player stats", link:"wallet.html" },
+    { title:"Support", description:"Get help", link:"#" }
+  ]
+};
+
+function esc(v) { return String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+const toast = $("toast");
+let toastTimer;
+function notify(msg) { toast.textContent = msg; toast.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => toast.classList.remove("show"),2400); }
+
+const drawer = $("drawer");
+const scrim = $("scrim");
+function openMenu() { drawer.classList.add("open"); scrim.classList.add("open"); document.body.classList.add("menu-open"); }
+function closeMenu() { drawer.classList.remove("open"); scrim.classList.remove("open"); document.body.classList.remove("menu-open"); }
+
+$("menuOpen").addEventListener("click",openMenu);
+$("menuClose").addEventListener("click",closeMenu);
+scrim.addEventListener("click",closeMenu);
+
+/* ===== CUSTOMER SERVICE MODAL LOGIC (CENTER + SCROLL LOCK) ===== */
+const csOverlay = $("csOverlay");
+function openCS() {
+  closeMenu();
+  csOverlay.classList.add("active");
+  document.body.classList.add("cs-open");
+}
+function closeCS() {
+  csOverlay.classList.remove("active");
+  document.body.classList.remove("cs-open");
+}
+$("customerServiceBtn").addEventListener("click", openCS);
+$("csPopupClose").addEventListener("click", closeCS);
+csOverlay.addEventListener("click", (e) => {
+  if (e.target === csOverlay) closeCS();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeCS();
+});
+
+window.openLogoutModal = () => { $("logoutModal").classList.add("active"); closeMenu(); };
+window.closeLogoutModal = () => { $("logoutModal").classList.remove("active"); };
+window.confirmLogout = async () => { try { await signOut(auth); closeLogoutModal(); location.href = "wallet.html"; } catch(e) { alert("Error logging out"); } };
+document.addEventListener("keydown",e => { if(e.key === "Escape") { closeMenu(); closeLogoutModal(); } });
+
+let walletListener = null;
+onAuthStateChanged(auth,user => {
+  if(walletListener) { walletListener(); walletListener = null; }
+  if(user) {
+    $("logoutBtn").classList.remove("hidden");
+    walletListener = onSnapshot(doc(db,"users",user.uid), snap => {
+      if(snap.exists()) { $("walletBalance").textContent = snap.data().walletBalance ?? 0; } else { $("walletBalance").textContent = 0; }
+    }, error => { console.error("Wallet error:",error); });
+  } else {
+    $("logoutBtn").classList.add("hidden"); $("walletBalance").textContent = "0";
+  }
+});
+
+$("logoutBtn").addEventListener("click", window.openLogoutModal);
+
+let current = 0, total = 0, moving = false, autoTimer = null;
+
+/* ===== UPDATED: Banner render with CTA button support ===== */
+function renderBanners(banners) {
+  if(!Array.isArray(banners) || banners.length === 0) banners = FALLBACK.banners;
+  banners = banners.slice(0,5);
+  total = banners.length;
+  const html = banners.map((b,i) => {
+    // Agar admin ne custom image diya hai to wahi use karo, warna default banner{i+1}.png
+    const image = (b.imageUrl && String(b.imageUrl).trim()) ? b.imageUrl : `banner${i+1}.png`;
+    const rawLink = (b.link || "").trim();
+    const hasLink = rawLink !== "" && rawLink !== "#";
+    const btnLabel = (b.btnText && b.btnText.trim()) ? b.btnText.trim() : "Join Now";
+    const safeLink = /^https?:\/\//i.test(rawLink) || /^\//.test(rawLink) || /\.(html|htm)(\?|#|$)/i.test(rawLink) || /^[a-z0-9]/i.test(rawLink) ? rawLink : "#";
+    const btnHTML = hasLink ? `<a class="banner-btn" href="${esc(safeLink)}">${esc(btnLabel)}</a>` : "";
+    return `<article class="slide" style="background-image:url('${esc(image)}')">
+      <div class="slide-copy">
+        <div class="eyebrow">${esc(b.eyebrow || "VZR ESPORTS")}</div>
+        <h1>${esc(b.title || "")}</h1>
+        <p>${esc(b.description || "")}</p>
+        ${btnHTML}
+      </div>
+    </article>`;
+  }).join("");
+  slidesEl.innerHTML = html;
+  if(total > 1) slidesEl.appendChild(slidesEl.firstElementChild.cloneNode(true));
+  dotsEl.innerHTML = banners.map((_,i) => `<button class="dot ${i===0 ? "active" : ""}" data-i="${i}"></button>`).join("");
+  current = 0; moving = false; slidesEl.style.transition = "none"; slidesEl.style.transform = "translateX(0)";
+  requestAnimationFrame(() => { slidesEl.style.transition = "transform .55s cubic-bezier(.2,.8,.2,1)"; });
+  restartAuto();
+}
+
+function updateDots(index) { dotsEl.querySelectorAll(".dot").forEach((dot,i) => { dot.classList.toggle("active",i === index); }); }
+function moveTo(index) { if(moving) return; moving = true; current = index; slidesEl.style.transform = `translateX(-${current*100}%)`; updateDots(current === total ? 0 : current); }
+function nextSlide() { if(!moving && total > 1) moveTo(current + 1 >= total ? total : current + 1); }
+function restartAuto() { clearInterval(autoTimer); if(total > 1) autoTimer = setInterval(nextSlide,5000); }
+
+slidesEl.addEventListener("transitionend",() => {
+  if(current === total) {
+    slidesEl.style.transition = "none"; current = 0; slidesEl.style.transform = "translateX(0)";
+    updateDots(0);
+    requestAnimationFrame(() => { requestAnimationFrame(() => { slidesEl.style.transition = "transform .55s cubic-bezier(.2,.8,.2,1)"; moving = false; }); });
+  } else moving = false;
+});
+
+dotsEl.addEventListener("click",e => { const btn = e.target.closest(".dot"); if(!btn || moving) return; moveTo(Number(btn.dataset.i)); restartAuto(); });
+
+let sx = 0, sy = 0, tracking = false;
+$("hero").addEventListener("touchstart",e => { if(!e.touches.length) return; sx = e.touches[0].clientX; sy = e.touches[0].clientY; tracking = true; },{passive:true});
+$("hero").addEventListener("touchend",e => {
+  if(!tracking || !e.changedTouches.length) return;
+  const dx = e.changedTouches[0].clientX - sx; const dy = e.changedTouches[0].clientY - sy; tracking = false;
+  if(Math.abs(dx)>45 && Math.abs(dx)>Math.abs(dy)*1.2 && !moving && total>1) {
+    if(dx<0) nextSlide(); else moveTo(current===0 ? total-1 : current-1); restartAuto();
+  }
+},{passive:true});
+
+function renderTiles(tiles) {
+  if(!Array.isArray(tiles)) tiles = FALLBACK.tiles;
+  tiles = tiles.slice(0,6);
+  tileGrid.innerHTML = tiles.map((t,i) => {
+    const image = (t.imageUrl && String(t.imageUrl).trim()) ? t.imageUrl : `image${i+1}.png`;
+    const link = t.link || "#";
+    return `<a class="tile" href="${esc(link)}" style="background-image:url('${esc(image)}')"><div class="tile-content"><h4>${esc(t.title || "Tournament")}</h4><p>${esc(t.description || "")}</p></div></a>`;
+  }).join("");
+}
+
+const lobbyRef = doc(db,"siteContent","lobby");
+onSnapshot(lobbyRef, snap => {
+  if(!snap.exists()) { renderBanners(FALLBACK.banners); renderTiles(FALLBACK.tiles); return; }
+  const data = snap.data() || {};
+  renderBanners(Array.isArray(data.banners) ? data.banners : FALLBACK.banners);
+  renderTiles(Array.isArray(data.tiles) ? data.tiles : FALLBACK.tiles);
+}, err => { console.error("Firebase error:",err); renderBanners(FALLBACK.banners); renderTiles(FALLBACK.tiles); notify("Could not load live content."); });
+
+document.querySelectorAll("[data-action]").forEach(btn => {
+  btn.addEventListener("click",() => { closeMenu(); notify(btn.dataset.action + " page will be connected in the next step."); });
+});
+</script>
+
+</body>
+</html>
