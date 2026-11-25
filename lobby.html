@@ -415,7 +415,7 @@ $("menuOpen").addEventListener("click",openMenu);
 $("menuClose").addEventListener("click",closeMenu);
 scrim.addEventListener("click",closeMenu);
 
-/* ===== CUSTOMER SERVICE MODAL LOGIC (CENTER + SCROLL LOCK) ===== */
+/* ===== CUSTOMER SERVICE MODAL LOGIC ===== */
 const csOverlay = $("csOverlay");
 function openCS() {
   closeMenu();
@@ -435,9 +435,19 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeCS();
 });
 
+/* ===== LOGOUT — redirect to index.html ===== */
 window.openLogoutModal = () => { $("logoutModal").classList.add("active"); closeMenu(); };
 window.closeLogoutModal = () => { $("logoutModal").classList.remove("active"); };
-window.confirmLogout = async () => { try { await signOut(auth); closeLogoutModal(); location.href = "wallet.html"; } catch(e) { alert("Error logging out"); } };
+window.confirmLogout = async () => {
+  try {
+    await signOut(auth);
+    closeLogoutModal();
+    // ✅ Redirect to index.html (landing page) after logout
+    location.href = "index.html";
+  } catch(e) {
+    alert("Error logging out: " + e.message);
+  }
+};
 document.addEventListener("keydown",e => { if(e.key === "Escape") { closeMenu(); closeLogoutModal(); } });
 
 let walletListener = null;
