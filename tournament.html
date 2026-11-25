@@ -409,9 +409,68 @@ input { user-select: text; }
 }
 .room-access-btn:active { filter: brightness(.9); }
 
+/* ===== PROFESSIONAL TOAST ===== */
+.vzr-toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translate(-50%, -140%);
+  background: linear-gradient(135deg, #1c1e26, #14151c);
+  border: 1px solid rgba(34,197,94,.4);
+  border-left: 4px solid var(--green);
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.7), 0 0 30px rgba(34,197,94,.18);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 280px;
+  max-width: calc(100vw - 40px);
+  transition: transform .45s cubic-bezier(.2,.8,.2,1);
+  cursor: pointer;
+}
+.vzr-toast.show { transform: translate(-50%, 0); }
+.vzr-toast.error {
+  border-color: rgba(237,38,56,.4);
+  border-left-color: var(--red);
+  box-shadow: 0 20px 60px rgba(0,0,0,.7), 0 0 30px rgba(237,38,56,.2);
+}
+.vzr-toast-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  background: rgba(34,197,94,.15);
+  border: 1px solid rgba(34,197,94,.35);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.vzr-toast.error .vzr-toast-icon {
+  background: rgba(237,38,56,.15);
+  border-color: rgba(237,38,56,.35);
+}
+.vzr-toast-body {
+  flex: 1;
+  min-width: 0;
+}
+.vzr-toast-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 2px;
+  letter-spacing: .3px;
+}
+.vzr-toast-msg {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
 @media(max-width: 480px) {
   .seat-entry-row { grid-template-columns: 1fr; }
   .room-field-value { font-size: 17px; }
+  .vzr-toast { padding: 12px 14px; min-width: 240px; }
+  .vzr-toast-icon { width: 36px; height: 36px; font-size: 18px; }
 }
 </style>
 </head>
@@ -506,7 +565,7 @@ input { user-select: text; }
   </div>
 </div>
 
-<!-- ===== ROOM CREDENTIALS POPUP (FIXED) ===== -->
+<!-- ===== ROOM CREDENTIALS POPUP ===== -->
 <div class="room-overlay" id="roomOverlay">
   <div class="room-popup" id="roomPopup">
     <div class="room-head">
@@ -537,6 +596,15 @@ input { user-select: text; }
   </div>
 </div>
 
+<!-- Toast container -->
+<div class="vzr-toast" id="vzrToast" onclick="hideToast()">
+  <div class="vzr-toast-icon" id="vzrToastIcon">✓</div>
+  <div class="vzr-toast-body">
+    <div class="vzr-toast-title" id="vzrToastTitle">Success</div>
+    <div class="vzr-toast-msg" id="vzrToastMsg">Booked!</div>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, onSnapshot, doc, getDoc, updateDoc, arrayUnion, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -558,13 +626,40 @@ const auth = getAuth(app);
 const container = document.getElementById("tournamentList");
 
 let currentTournament = null;
-let selectedSeats = []; // Array of { seat, name, uid }
+let selectedSeats = [];
 let userWalletBalance = 0;
 let currentUser = null;
 let allTournaments = []; 
 let currentFilter = null;
 let roomPopupShownFor = new Set();
 let roomCheckInterval = null;
+
+// ============ PROFESSIONAL TOAST ============
+let toastTimer = null;
+function showToast(title, msg, isError = false) {
+  const toast = document.getElementById("vzrToast");
+  const icon = document.getElementById("vzrToastIcon");
+  const titleEl = document.getElementById("vzrToastTitle");
+  const msgEl = document.getElementById("vzrToastMsg");
+
+  titleEl.textContent = title;
+  msgEl.textContent = msg;
+  icon.textContent = isError ? "!" : "✓";
+
+  toast.classList.toggle("error", isError);
+  toast.classList.remove("show");
+  // Force reflow so animation restarts
+  void toast.offsetWidth;
+  toast.classList.add("show");
+
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 4000);
+}
+
+window.hideToast = () => {
+  document.getElementById("vzrToast").classList.remove("show");
+  clearTimeout(toastTimer);
+};
 
 // ============ ROOM CREDENTIAL CHECKER ============
 function parseTournamentDate(dateStr) {
@@ -682,7 +777,7 @@ window.openRoomCredsManually = (tournId) => {
   const t = allTournaments.find(x => x.id === tournId);
   if (!t) return;
   if (!t.roomId && !t.roomPassword) {
-    alert("Room credentials not yet available. Please wait.");
+    showToast("Not Ready", "Room credentials not yet available. Please wait.", true);
     return;
   }
   showRoomPopup(t);
@@ -774,7 +869,6 @@ function renderTournaments() {
       </div>
     ` : "";
 
-    // Agar user joined hai to JOIN MORE button dikhao (aur seats book kar sakta hai)
     const joinButtonLabel = hasJoined ? "＋ BOOK MORE SEATS" : (left <= 0 ? 'FULL' : 'JOIN NOW');
     const joinButtonClass = (left <= 0 && !hasJoined) ? 'locked' : '';
 
@@ -846,8 +940,8 @@ window.showDetails = (encodedData) => {
 // ============ MULTI-SEAT JOIN LOGIC ============
 window.openJoinModal = (id, slots, fee, playersData) => {
     if(!currentUser) {
-        alert("Please login first to join tournament!");
-        window.location.href = "wallet.html";
+        showToast("Login Required", "Please login first to join tournament.", true);
+        setTimeout(() => { window.location.href = "wallet.html"; }, 1200);
         return;
     }
     
@@ -864,7 +958,6 @@ window.openJoinModal = (id, slots, fee, playersData) => {
     document.getElementById("confirmBtn").disabled = false;
     document.getElementById("confirmBtn").textContent = "Confirm Booking";
     
-    // Render seat grid
     const seatGrid = document.getElementById("seatGrid");
     seatGrid.innerHTML = "";
     
@@ -884,14 +977,11 @@ window.toggleSeat = (seatNum, isBooked) => {
     const existingIdx = selectedSeats.findIndex(s => s.seat === seatNum);
     
     if(existingIdx !== -1) {
-        // Remove seat
         selectedSeats.splice(existingIdx, 1);
     } else {
-        // Add seat
         selectedSeats.push({ seat: seatNum, name: "", uid: "" });
     }
     
-    // Update seat visuals
     document.querySelectorAll(".seat").forEach(el => {
         const s = Number(el.dataset.seat);
         el.classList.toggle("selected", selectedSeats.some(sel => sel.seat === s));
@@ -910,7 +1000,6 @@ function renderSelectedSeats() {
         return;
     }
     
-    // Sort by seat number
     selectedSeats.sort((a,b) => a.seat - b.seat);
     
     selectedSeats.forEach((s, idx) => {
@@ -976,12 +1065,14 @@ function updateConfirmBox() {
 window.confirmBooking = async () => {
     const errorText = document.getElementById("bookingError");
     
-    // Validation
-    if(selectedSeats.length === 0) { alert("Please select at least one seat!"); return; }
+    if(selectedSeats.length === 0) { 
+        showToast("No Seats Selected", "Please select at least one seat.", true);
+        return; 
+    }
     
     for(const s of selectedSeats) {
         if(!s.name.trim() || !s.uid.trim()) {
-            alert(`Please enter IGN and UID for Seat #${s.seat}`);
+            showToast("Missing Details", `Please enter IGN and UID for Seat #${s.seat}`, true);
             return;
         }
     }
@@ -995,6 +1086,7 @@ window.confirmBooking = async () => {
     if(freshBalance < totalFee) {
         errorText.textContent = `Insufficient balance! You need ₹${totalFee} but have ₹${freshBalance}`;
         errorText.style.display = "block";
+        showToast("Insufficient Balance", `You need ₹${totalFee} but have ₹${freshBalance}. Please deposit more.`, true);
         return;
     }
     
@@ -1003,12 +1095,10 @@ window.confirmBooking = async () => {
     errorText.style.display = "none";
     
     try {
-        // Deduct total fee
         await updateDoc(doc(db, "users", currentUser.uid), {
             walletBalance: increment(-totalFee)
         });
         
-        // Add all seats at once
         const newPlayers = selectedSeats.map(s => ({
             name: s.name.trim(),
             uid: s.uid.trim(),
@@ -1024,16 +1114,19 @@ window.confirmBooking = async () => {
         userWalletBalance = freshBalance - totalFee;
         document.getElementById("userWallet").textContent = userWalletBalance;
         
-        alert(`Success! ${selectedSeats.length} seat(s) booked. ₹${totalFee} deducted.`);
         closeModal('joinModal');
+        showToast(
+          "Booking Successful!", 
+          `${selectedSeats.length} seat(s) booked. ₹${totalFee} deducted from wallet.`,
+          false
+        );
         
-        // Reset
         selectedSeats = [];
         
     } catch (e) {
-        alert("Error: " + e.message);
         btn.disabled = false;
         btn.textContent = "Confirm Booking";
+        showToast("Booking Failed", e.message || "Something went wrong. Try again.", true);
     }
 };
 </script>
