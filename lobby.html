@@ -318,7 +318,7 @@ body.cs-open { overflow:hidden; overscroll-behavior:none; }
 
   <div class="menu-label">ACCOUNT</div>
   <nav class="menu-list">
-    <button class="menu-item" data-action="Profile"><span class="ico">›</span>Profile</button>
+    <a href="profile.html" class="menu-item"><span class="ico">›</span>Profile</a>
     <a href="history.html" class="menu-item"><span class="ico">›</span>History</a>
     <a href="deposit.html" class="menu-item"><span class="ico">›</span>Deposit</a>
     <a href="withdraw.html" class="menu-item"><span class="ico">›</span>Withdrawal</a>
@@ -395,7 +395,7 @@ const FALLBACK = {
     { title:"My Matches", description:"Keep track of your matches", link:"history.html" },
     { title:"Announcements", description:"Latest community updates", link:"announcements.html" },
     { title:"Leaderboard", description:"See community rankings", link:"leaderboard.html" },
-    { title:"Profile", description:"Your player stats", link:"wallet.html" },
+    { title:"Profile", description:"Your player stats", link:"profile.html" },
     { title:"Support", description:"Get help", link:"#" }
   ]
 };
@@ -457,13 +457,12 @@ $("logoutBtn").addEventListener("click", window.openLogoutModal);
 
 let current = 0, total = 0, moving = false, autoTimer = null;
 
-/* ===== UPDATED: Banner render with CTA button support ===== */
+/* ===== Banner render with CTA button support ===== */
 function renderBanners(banners) {
   if(!Array.isArray(banners) || banners.length === 0) banners = FALLBACK.banners;
   banners = banners.slice(0,5);
   total = banners.length;
   const html = banners.map((b,i) => {
-    // Agar admin ne custom image diya hai to wahi use karo, warna default banner{i+1}.png
     const image = (b.imageUrl && String(b.imageUrl).trim()) ? b.imageUrl : `banner${i+1}.png`;
     const rawLink = (b.link || "").trim();
     const hasLink = rawLink !== "" && rawLink !== "#";
@@ -529,10 +528,6 @@ onSnapshot(lobbyRef, snap => {
   renderBanners(Array.isArray(data.banners) ? data.banners : FALLBACK.banners);
   renderTiles(Array.isArray(data.tiles) ? data.tiles : FALLBACK.tiles);
 }, err => { console.error("Firebase error:",err); renderBanners(FALLBACK.banners); renderTiles(FALLBACK.tiles); notify("Could not load live content."); });
-
-document.querySelectorAll("[data-action]").forEach(btn => {
-  btn.addEventListener("click",() => { closeMenu(); notify(btn.dataset.action + " page will be connected in the next step."); });
-});
 </script>
 
 </body>
