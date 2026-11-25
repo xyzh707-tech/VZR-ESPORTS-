@@ -9,7 +9,7 @@
   --bg: #09090b; --panel: #14151c; --line: #292c36; --red: #ed2638;
   --green: #22c55e; --text: #f5f5f7; --muted: #9ca3af;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
 body { 
   background: var(--bg); 
   background-image: radial-gradient(circle at top right, rgba(237, 38, 56, 0.15), transparent 50%),
@@ -17,6 +17,7 @@ body {
   background-attachment: fixed;
   color: var(--text); padding-bottom: 50px; min-height: 100vh;
 }
+input { user-select: text; }
 
 /* HEADER */
 .header { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: var(--panel); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 10; }
@@ -24,7 +25,6 @@ body {
 .header h1 { font-size: 20px; font-weight: 800; letter-spacing: 1px; }
 .back-btn { background: transparent; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0 5px; }
 
-/* FILTER & WALLET */
 .header-right { display: flex; align-items: center; gap: 8px; }
 .filter-container { position: relative; }
 .filter-btn { 
@@ -115,11 +115,93 @@ body {
 .seat.booked { background: #451c25; border-color: #7a2d3c; color: #ff9da7; cursor: not-allowed; }
 .seat.selected { background: var(--green); border-color: var(--green); color: white; }
 
+/* MULTI-SEAT LIST */
+.selected-seats-list {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.no-seats-hint {
+  background: #09090b;
+  border: 1px dashed var(--line);
+  padding: 14px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 12px;
+}
+.seat-entry {
+  background: #09090b;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--green);
+  border-radius: 8px;
+  padding: 12px;
+  position: relative;
+}
+.seat-entry-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.seat-entry-badge {
+  background: var(--green);
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .5px;
+}
+.seat-remove {
+  background: rgba(255,77,77,.15);
+  border: 1px solid rgba(255,77,77,.35);
+  color: #ff6b6b;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.seat-remove:active { background: rgba(255,77,77,.3); }
+.seat-entry-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.seat-entry-row input {
+  background: #14151c;
+  border: 1px solid var(--line);
+  color: white;
+  padding: 9px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  outline: none;
+  width: 100%;
+}
+.seat-entry-row input:focus { border-color: var(--green); }
+
 /* CONFIRM BOX */
 .confirm-box { background: #09090b; border: 1px dashed var(--line); padding: 15px; border-radius: 8px; margin-top: 15px; display: none; }
 .confirm-box.active { display: block; }
 .confirm-details { font-size: 13px; margin-bottom: 15px; line-height: 1.6; }
+.confirm-details .total-line {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+  margin-top: 8px;
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--green);
+}
 .btn-confirm { width: 100%; background: var(--green); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; outline: none; }
+.btn-confirm:disabled { opacity: .6; cursor: not-allowed; }
 
 /* ERROR TEXT */
 .error-text { color: #ff4d4d; font-size: 13px; font-weight: bold; text-align: center; margin-top: 10px; display: none; }
@@ -132,6 +214,205 @@ body {
 .rules-text { font-size: 12px; white-space: pre-wrap; color: #d1d5db; }
 .player-list { max-height: 200px; overflow-y: auto; margin-top: 10px; }
 .player-item { display: flex; justify-content: space-between; background: #09090b; padding: 10px; border-radius: 6px; margin-bottom: 5px; font-size: 12px; border: 1px solid var(--line); }
+
+/* ===== ROOM CREDENTIALS POPUP (FIXED SCROLL) ===== */
+.room-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 15px;
+  overscroll-behavior: contain;
+}
+.room-overlay.active { display: flex; }
+.room-popup {
+  width: 100%;
+  max-width: 380px;
+  max-height: 92vh;
+  background: linear-gradient(160deg,#1c1e26,#111115);
+  border: 1px solid #34343b;
+  border-radius: 18px;
+  box-shadow: 0 25px 80px rgba(237,38,56,.25);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: roomPop .3s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes roomPop {
+  from { transform: scale(.85); opacity: 0; }
+  to   { transform: scale(1);  opacity: 1; }
+}
+.room-head {
+  padding: 16px 18px 14px;
+  background: linear-gradient(135deg, rgba(237,38,56,.25), transparent);
+  border-bottom: 1px solid #292c36;
+  position: relative;
+  flex-shrink: 0;
+}
+.room-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(237,38,56,.2);
+  border: 1px solid rgba(237,38,56,.4);
+  color: #ff6572;
+  padding: 4px 10px; border-radius: 999px;
+  font-size: 10px; font-weight: 800; letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.room-badge::before {
+  content:""; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 8px var(--red);
+  animation: blink 1.2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+.room-title {
+  font-size: 16px; font-weight: 800;
+  color: #fff; line-height: 1.3;
+  margin-bottom: 4px;
+  padding-right: 40px;
+}
+.room-subtitle {
+  font-size: 12px; color: var(--muted);
+  padding-right: 40px;
+}
+.room-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  background: rgba(255,255,255,.12);
+  border: 0; color: #fff;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2;
+}
+.room-close:active { background: var(--red); }
+
+.room-body { 
+  padding: 16px 18px; 
+  overflow-y: auto; 
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
+}
+
+.room-field {
+  background: #09090b;
+  border: 1px solid #292c36;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  position: relative;
+  padding-right: 70px;
+}
+.room-field-label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.room-field-value {
+  font-size: 20px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 1.5px;
+  font-family: 'Courier New', monospace;
+  word-break: break-all;
+}
+.room-copy-btn {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  background: #292c36;
+  border: 0; color: #fff;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 10px; font-weight: 700;
+  cursor: pointer;
+  letter-spacing: .5px;
+}
+.room-copy-btn:active { background: var(--green); }
+.room-copy-btn.copied { background: var(--green); }
+
+.room-desc {
+  background: rgba(251,191,36,.08);
+  border: 1px solid rgba(251,191,36,.25);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-top: 4px;
+}
+.room-desc-label {
+  font-size: 10px;
+  color: #fbbf24;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+.room-desc-text {
+  font-size: 13px;
+  color: #e5e7eb;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.room-timer {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  padding-bottom: 4px;
+}
+.room-timer b { color: var(--red); }
+
+/* Room access banner on tournament card */
+.room-access-banner {
+  background: linear-gradient(135deg, rgba(34,197,94,.15), rgba(34,197,94,.05));
+  border: 1px solid rgba(34,197,94,.3);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.room-access-banner .info {
+  font-size: 12px;
+  color: #bbf7d0;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.room-access-banner .info::before {
+  content: "🎮";
+  font-size: 16px;
+}
+.room-access-btn {
+  background: var(--green);
+  color: white;
+  border: 0;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.room-access-btn:active { filter: brightness(.9); }
+
+@media(max-width: 480px) {
+  .seat-entry-row { grid-template-columns: 1fr; }
+  .room-field-value { font-size: 17px; }
+}
 </style>
 </head>
 <body>
@@ -143,13 +424,11 @@ body {
   </div>
   
   <div class="header-right">
-    <!-- Active Filter Tag -->
     <div class="active-filter" id="activeFilter">
       <span id="filterText">BR</span>
       <button class="x-btn" onclick="clearFilter()">✕</button>
     </div>
 
-    <!-- Filter Button -->
     <div class="filter-container">
       <button class="filter-btn" onclick="toggleFilterMenu()">Filter ▼</button>
       <div class="filter-menu" id="filterMenu">
@@ -159,7 +438,6 @@ body {
       </div>
     </div>
 
-    <!-- Wallet -->
     <a href="deposit.html" class="wallet-tag">
       <span class="coin">₹</span> <span id="userWallet">0</span>
     </a>
@@ -200,7 +478,7 @@ body {
   </div>
 </div>
 
-<!-- 2. JOIN / REGISTRATION MODAL -->
+<!-- 2. MULTI-SEAT JOIN MODAL -->
 <div class="modal-overlay" id="joinModal">
   <div class="modal-box">
     <div class="modal-header">
@@ -208,22 +486,52 @@ body {
       <h2 id="joinTitle">Join Tournament</h2>
     </div>
     <div class="modal-content">
-      <div class="form-group">
-        <label>In-Game Name</label>
-        <input type="text" id="joinName" placeholder="Enter your Free Fire Name" required>
-      </div>
-      <div class="form-group">
-        <label>Free Fire UID</label>
-        <input type="text" id="joinUID" placeholder="Enter your Free Fire UID" required>
-      </div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:15px;line-height:1.5;">
+        💡 <b>Multiple seats select kar sakte ho</b> — squad ke liye ek saath book karo ya ek-ek karke baad mein bhi join kar sakte ho.
+      </p>
 
-      <div class="detail-title" style="margin-top:20px;">Select Your Seat</div>
+      <div class="detail-title">Select Seat(s)</div>
       <div class="seat-grid" id="seatGrid"></div>
+
+      <div class="selected-seats-list" id="selectedSeatsList">
+        <div class="no-seats-hint">Koi seat select nahi ki abhi. Upar se seat pe click karo.</div>
+      </div>
 
       <div class="confirm-box" id="confirmBox">
         <div class="confirm-details" id="confirmDetails"></div>
-        <button class="btn-confirm" onclick="confirmBooking()">Confirm Booking</button>
+        <button class="btn-confirm" id="confirmBtn" onclick="confirmBooking()">Confirm Booking</button>
         <div class="error-text" id="bookingError">Insufficient Balance!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ROOM CREDENTIALS POPUP (FIXED) ===== -->
+<div class="room-overlay" id="roomOverlay">
+  <div class="room-popup" id="roomPopup">
+    <div class="room-head">
+      <div class="room-badge" id="roomBadge">MATCH STARTING SOON</div>
+      <div class="room-title" id="roomTitle">Tournament Name</div>
+      <div class="room-subtitle" id="roomSubtitle">Time: --</div>
+      <button class="room-close" onclick="closeRoomPopup()">✕</button>
+    </div>
+    <div class="room-body">
+      <div class="room-field">
+        <div class="room-field-label">Room ID</div>
+        <div class="room-field-value" id="roomIdValue">— — — —</div>
+        <button class="room-copy-btn" onclick="copyRoomCred('roomIdValue', this)">COPY</button>
+      </div>
+      <div class="room-field">
+        <div class="room-field-label">Password</div>
+        <div class="room-field-value" id="roomPassValue">— — — —</div>
+        <button class="room-copy-btn" onclick="copyRoomCred('roomPassValue', this)">COPY</button>
+      </div>
+      <div class="room-desc">
+        <div class="room-desc-label">📢 Instructions</div>
+        <div class="room-desc-text" id="roomDescValue">No description provided.</div>
+      </div>
+      <div class="room-timer">
+        Room closes <b id="roomTimerText">15 min</b> before match time
       </div>
     </div>
   </div>
@@ -250,13 +558,137 @@ const auth = getAuth(app);
 const container = document.getElementById("tournamentList");
 
 let currentTournament = null;
-let selectedSeat = null;
+let selectedSeats = []; // Array of { seat, name, uid }
 let userWalletBalance = 0;
 let currentUser = null;
 let allTournaments = []; 
-let currentFilter = null; 
+let currentFilter = null;
+let roomPopupShownFor = new Set();
+let roomCheckInterval = null;
 
-// 1. Load User & Wallet
+// ============ ROOM CREDENTIAL CHECKER ============
+function parseTournamentDate(dateStr) {
+  if (!dateStr || typeof dateStr !== "string") return null;
+  const cleaned = dateStr.trim();
+  let dt = new Date(cleaned);
+  if (!isNaN(dt.getTime())) return dt;
+
+  const match = cleaned.match(/(\d{1,2})\s+([A-Za-z]{3,})\s*,?\s*(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  if (match) {
+    const day = parseInt(match[1]);
+    const monthStr = match[2];
+    let hour = parseInt(match[3]);
+    const minute = parseInt(match[4]);
+    const ampm = match[5].toUpperCase();
+    if (ampm === "PM" && hour !== 12) hour += 12;
+    if (ampm === "AM" && hour === 12) hour = 0;
+
+    const months = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
+    const monKey = monthStr.toLowerCase().slice(0,3);
+    if (!(monKey in months)) return null;
+
+    const now = new Date();
+    let year = now.getFullYear();
+    const testDate = new Date(year, months[monKey], day, hour, minute);
+    if (testDate.getTime() < now.getTime() - 12 * 60 * 60 * 1000) {
+      year += 1;
+    }
+    return new Date(year, months[monKey], day, hour, minute);
+  }
+  return null;
+}
+
+function checkRoomPopups() {
+  if (!currentUser) return;
+  const now = Date.now();
+
+  allTournaments.forEach(t => {
+    const joined = (t.players || []).some(p => p.userId === currentUser.uid);
+    if (!joined) return;
+
+    const hasRoom = (t.roomId && String(t.roomId).trim() !== "") || (t.roomPassword && String(t.roomPassword).trim() !== "");
+    if (!hasRoom) return;
+
+    const matchTime = parseTournamentDate(t.date);
+    if (!matchTime) return;
+
+    const diffMs = matchTime.getTime() - now;
+    const diffMin = diffMs / 60000;
+
+    if (diffMin <= 15 && diffMin >= -120) {
+      const key = `${t.id}_${t.roomId}_${t.roomPassword}`;
+      if (!roomPopupShownFor.has(key)) {
+        roomPopupShownFor.add(key);
+        showRoomPopup(t);
+      }
+    }
+  });
+}
+
+function startRoomChecker() {
+  if (roomCheckInterval) clearInterval(roomCheckInterval);
+  checkRoomPopups();
+  roomCheckInterval = setInterval(checkRoomPopups, 30000);
+}
+
+function showRoomPopup(t) {
+  document.getElementById("roomTitle").textContent = t.title || "Tournament";
+  document.getElementById("roomSubtitle").textContent = `Time: ${t.date || "TBA"}`;
+  document.getElementById("roomIdValue").textContent = t.roomId || "Not set";
+  document.getElementById("roomPassValue").textContent = t.roomPassword || "Not set";
+  document.getElementById("roomDescValue").textContent = 
+    (t.roomDescription && String(t.roomDescription).trim()) ? t.roomDescription : "No description provided.";
+  
+  const matchTime = parseTournamentDate(t.date);
+  if (matchTime) {
+    const diffMin = Math.round((matchTime.getTime() - Date.now()) / 60000);
+    const timerEl = document.getElementById("roomTimerText");
+    if (diffMin > 0) timerEl.textContent = `${diffMin} min`;
+    else timerEl.textContent = "NOW";
+  }
+
+  document.getElementById("roomOverlay").classList.add("active");
+  document.body.style.overflow = "hidden";
+  document.querySelector(".room-body").scrollTop = 0;
+}
+
+window.closeRoomPopup = () => {
+  document.getElementById("roomOverlay").classList.remove("active");
+  document.body.style.overflow = "";
+};
+
+window.copyRoomCred = async (elementId, btn) => {
+  const text = document.getElementById(elementId).textContent.trim();
+  if (!text || text === "Not set" || text.includes("—")) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    const originalText = btn.textContent;
+    btn.textContent = "COPIED!";
+    btn.classList.add("copied");
+    setTimeout(() => { btn.textContent = originalText; btn.classList.remove("copied"); }, 1500);
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    btn.textContent = "COPIED!";
+    setTimeout(() => { btn.textContent = "COPY"; }, 1500);
+  }
+};
+
+window.openRoomCredsManually = (tournId) => {
+  const t = allTournaments.find(x => x.id === tournId);
+  if (!t) return;
+  if (!t.roomId && !t.roomPassword) {
+    alert("Room credentials not yet available. Please wait.");
+    return;
+  }
+  showRoomPopup(t);
+};
+
+// ============ LOAD USER ============
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
@@ -265,25 +697,28 @@ onAuthStateChanged(auth, async (user) => {
             userWalletBalance = snap.data().walletBalance || 0;
             document.getElementById("userWallet").textContent = userWalletBalance;
         }
+        startRoomChecker();
     } else {
+        currentUser = null;
         document.getElementById("userWallet").textContent = "0";
+        if (roomCheckInterval) clearInterval(roomCheckInterval);
     }
 });
 
-// 2. Load Tournaments
+// ============ LOAD TOURNAMENTS ============
 onSnapshot(collection(db, "tournaments"), snapshot => {
   allTournaments = [];
   snapshot.forEach(doc => {
       allTournaments.push({ id: doc.id, ...doc.data() });
   });
   renderTournaments();
+  checkRoomPopups();
 });
 
-// 3. Filter Logic
+// ============ FILTER ============
 window.toggleFilterMenu = () => {
     document.getElementById("filterMenu").classList.toggle("show");
 };
-
 window.applyFilter = (type) => {
     currentFilter = type;
     document.getElementById("filterMenu").classList.remove("show");
@@ -291,14 +726,13 @@ window.applyFilter = (type) => {
     document.getElementById("filterText").textContent = type;
     renderTournaments();
 };
-
 window.clearFilter = () => {
     currentFilter = null;
     document.getElementById("activeFilter").classList.remove("show");
     renderTournaments();
 };
 
-// 4. Render Tournaments
+// ============ RENDER TOURNAMENTS ============
 function renderTournaments() {
   container.innerHTML = "";
   
@@ -329,10 +763,26 @@ function renderTournaments() {
     const feeColor = t.entryFee > 0 ? 'var(--text)' : 'var(--green)';
     const detailData = encodeURIComponent(JSON.stringify(t));
 
+    const hasJoined = currentUser && (t.players || []).some(p => p.userId === currentUser.uid);
+    const hasRoom = (t.roomId && String(t.roomId).trim() !== "") || (t.roomPassword && String(t.roomPassword).trim() !== "");
+    const showRoomBanner = hasJoined && hasRoom;
+
+    const roomBannerHTML = showRoomBanner ? `
+      <div class="room-access-banner">
+        <div class="info">Room credentials ready</div>
+        <button class="room-access-btn" onclick="openRoomCredsManually('${id}')">VIEW ROOM</button>
+      </div>
+    ` : "";
+
+    // Agar user joined hai to JOIN MORE button dikhao (aur seats book kar sakta hai)
+    const joinButtonLabel = hasJoined ? "＋ BOOK MORE SEATS" : (left <= 0 ? 'FULL' : 'JOIN NOW');
+    const joinButtonClass = (left <= 0 && !hasJoined) ? 'locked' : '';
+
     container.innerHTML += `
       <div class="t-card">
         ${t.imageUrl ? `<img src="${t.imageUrl}" class="t-image">` : ''}
         <div class="t-info-box">
+          ${roomBannerHTML}
           <div class="t-title">${esc(t.title)}</div>
           <div class="t-date">Time: ${esc(t.date)}</div>
 
@@ -343,9 +793,9 @@ function renderTournaments() {
           </div>
 
           <div class="t-sub-stats">
-            <div class="sub-stat"><span class="sub-label">TYPE</span><span class="sub-val">${esc(t.mode.split(' ')[1] || t.mode)}</span></div>
+            <div class="sub-stat"><span class="sub-label">TYPE</span><span class="sub-val">${esc((t.mode || "").split(' ')[1] || t.mode || "")}</span></div>
             <div class="sub-stat"><span class="sub-label">VERSION</span><span class="sub-val">TPP</span></div>
-            <div class="sub-stat"><span class="sub-label">MAP</span><span class="sub-val">${esc(t.map).toUpperCase()}</span></div>
+            <div class="sub-stat"><span class="sub-label">MAP</span><span class="sub-val">${esc((t.map || "").toUpperCase())}</span></div>
           </div>
 
           <div class="progress-container">
@@ -354,8 +804,8 @@ function renderTournaments() {
           </div>
 
           <div class="t-actions">
-            <button class="btn-join ${left <= 0 ? 'locked' : ''}" onclick="openJoinModal('${id}', ${slots}, ${t.entryFee || 0}, '${encodeURIComponent(JSON.stringify(t.players || []))}')">
-              ${left <= 0 ? 'FULL' : 'JOIN NOW'}
+            <button class="btn-join ${joinButtonClass}" onclick="openJoinModal('${id}', ${slots}, ${t.entryFee || 0}, '${encodeURIComponent(JSON.stringify(t.players || []))}')">
+              ${joinButtonLabel}
             </button>
             <button class="btn-detail" onclick="showDetails('${detailData}')">VIEW DETAILS</button>
           </div>
@@ -393,6 +843,7 @@ window.showDetails = (encodedData) => {
     document.getElementById("detailModal").classList.add("active");
 };
 
+// ============ MULTI-SEAT JOIN LOGIC ============
 window.openJoinModal = (id, slots, fee, playersData) => {
     if(!currentUser) {
         alert("Please login first to join tournament!");
@@ -400,83 +851,190 @@ window.openJoinModal = (id, slots, fee, playersData) => {
         return;
     }
     
-    currentTournament = { id, slots, fee };
+    const tour = allTournaments.find(x => x.id === id);
+    if(!tour) return;
+    
+    currentTournament = { id, slots, fee, players: tour.players || [] };
     const players = JSON.parse(decodeURIComponent(playersData));
-    selectedSeat = null;
+    selectedSeats = [];
 
     document.getElementById("joinModal").classList.add("active");
     document.getElementById("confirmBox").classList.remove("active");
     document.getElementById("bookingError").style.display = "none";
+    document.getElementById("confirmBtn").disabled = false;
+    document.getElementById("confirmBtn").textContent = "Confirm Booking";
     
+    // Render seat grid
     const seatGrid = document.getElementById("seatGrid");
     seatGrid.innerHTML = "";
     
-    const maxSeats = Math.min(slots, 100); 
+    const maxSeats = Math.min(slots, 100);
     
     for(let i = 1; i <= maxSeats; i++) {
         const isBooked = players.some(p => p.seat === i);
-        seatGrid.innerHTML += `<div class="seat ${isBooked ? 'booked' : ''}" data-seat="${i}" onclick="selectSeat(${i}, ${isBooked})">${i}</div>`;
+        seatGrid.innerHTML += `<div class="seat ${isBooked ? 'booked' : ''}" data-seat="${i}" onclick="toggleSeat(${i}, ${isBooked})">${i}</div>`;
     }
+    
+    renderSelectedSeats();
 };
 
-window.selectSeat = (seatNum, isBooked) => {
+window.toggleSeat = (seatNum, isBooked) => {
     if(isBooked) return;
-    document.querySelectorAll(".seat.selected").forEach(el => el.classList.remove("selected"));
-    const seatEl = document.querySelector(`.seat[data-seat="${seatNum}"]`);
-    if(seatEl) seatEl.classList.add("selected");
-    selectedSeat = seatNum;
+    
+    const existingIdx = selectedSeats.findIndex(s => s.seat === seatNum);
+    
+    if(existingIdx !== -1) {
+        // Remove seat
+        selectedSeats.splice(existingIdx, 1);
+    } else {
+        // Add seat
+        selectedSeats.push({ seat: seatNum, name: "", uid: "" });
+    }
+    
+    // Update seat visuals
+    document.querySelectorAll(".seat").forEach(el => {
+        const s = Number(el.dataset.seat);
+        el.classList.toggle("selected", selectedSeats.some(sel => sel.seat === s));
+    });
+    
+    renderSelectedSeats();
+    updateConfirmBox();
+};
+
+function renderSelectedSeats() {
+    const list = document.getElementById("selectedSeatsList");
+    list.innerHTML = "";
+    
+    if(selectedSeats.length === 0) {
+        list.innerHTML = '<div class="no-seats-hint">Koi seat select nahi ki abhi. Upar se seat pe click karo.</div>';
+        return;
+    }
+    
+    // Sort by seat number
+    selectedSeats.sort((a,b) => a.seat - b.seat);
+    
+    selectedSeats.forEach((s, idx) => {
+        list.innerHTML += `
+          <div class="seat-entry">
+            <div class="seat-entry-head">
+              <div class="seat-entry-badge">SEAT #${s.seat}</div>
+              <button class="seat-remove" onclick="removeSeat(${s.seat})">✕</button>
+            </div>
+            <div class="seat-entry-row">
+              <input type="text" placeholder="IGN (In-Game Name)" 
+                     value="${esc(s.name)}" 
+                     oninput="updateSeatField(${s.seat}, 'name', this.value)">
+              <input type="text" placeholder="Free Fire UID" 
+                     value="${esc(s.uid)}" 
+                     oninput="updateSeatField(${s.seat}, 'uid', this.value)">
+            </div>
+          </div>
+        `;
+    });
+}
+
+window.updateSeatField = (seatNum, field, value) => {
+    const s = selectedSeats.find(x => x.seat === seatNum);
+    if(s) s[field] = value;
+    updateConfirmBox();
+};
+
+window.removeSeat = (seatNum) => {
+    selectedSeats = selectedSeats.filter(s => s.seat !== seatNum);
+    document.querySelectorAll(".seat").forEach(el => {
+        const s = Number(el.dataset.seat);
+        el.classList.toggle("selected", selectedSeats.some(sel => sel.seat === s));
+    });
+    renderSelectedSeats();
+    updateConfirmBox();
+};
+
+function updateConfirmBox() {
+    const box = document.getElementById("confirmBox");
+    
+    if(selectedSeats.length === 0) {
+        box.classList.remove("active");
+        return;
+    }
     
     const fee = currentTournament.fee || 0;
-    document.getElementById("confirmDetails").innerHTML = `
-        <div>Seat Selected: <b>#${seatNum}</b></div>
-        <div>Entry Fee: <b>₹${fee}</b></div>
-    `;
-    document.getElementById("confirmBox").classList.add("active");
-};
+    const totalFee = fee * selectedSeats.length;
+    
+    let detailsHTML = `<div style="margin-bottom:8px;"><b>${selectedSeats.length} seat(s) selected:</b></div>`;
+    selectedSeats.forEach(s => {
+        detailsHTML += `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;">
+          <span>Seat #${s.seat} ${s.name ? '- ' + esc(s.name) : '(IGN pending)'}</span>
+          <span>₹${fee}</span>
+        </div>`;
+    });
+    detailsHTML += `<div class="total-line"><span>Total Amount</span><span>₹${totalFee}</span></div>`;
+    
+    document.getElementById("confirmDetails").innerHTML = detailsHTML;
+    box.classList.add("active");
+}
 
 window.confirmBooking = async () => {
-    const name = document.getElementById("joinName").value.trim();
-    const uid = document.getElementById("joinUID").value.trim();
     const errorText = document.getElementById("bookingError");
     
-    if(!name || !uid) { alert("Please enter Name and UID!"); return; }
-    if(!selectedSeat) { alert("Please select a seat!"); return; }
+    // Validation
+    if(selectedSeats.length === 0) { alert("Please select at least one seat!"); return; }
+    
+    for(const s of selectedSeats) {
+        if(!s.name.trim() || !s.uid.trim()) {
+            alert(`Please enter IGN and UID for Seat #${s.seat}`);
+            return;
+        }
+    }
     
     const fee = currentTournament.fee || 0;
+    const totalFee = fee * selectedSeats.length;
     
     const userSnap = await getDoc(doc(db, "users", currentUser.uid));
     const freshBalance = userSnap.data().walletBalance || 0;
 
-    if(freshBalance < fee) {
+    if(freshBalance < totalFee) {
+        errorText.textContent = `Insufficient balance! You need ₹${totalFee} but have ₹${freshBalance}`;
         errorText.style.display = "block";
         return;
     }
     
-    const btn = document.querySelector(".btn-confirm");
+    const btn = document.getElementById("confirmBtn");
     btn.disabled = true; btn.textContent = "BOOKING...";
     errorText.style.display = "none";
     
     try {
+        // Deduct total fee
         await updateDoc(doc(db, "users", currentUser.uid), {
-            walletBalance: increment(-fee)
+            walletBalance: increment(-totalFee)
         });
+        
+        // Add all seats at once
+        const newPlayers = selectedSeats.map(s => ({
+            name: s.name.trim(),
+            uid: s.uid.trim(),
+            seat: s.seat,
+            userId: currentUser.uid
+        }));
         
         await updateDoc(doc(db, "tournaments", currentTournament.id), {
-            joined: increment(1),
-            players: arrayUnion({ name: name, uid: uid, seat: selectedSeat, userId: currentUser.uid })
+            joined: increment(newPlayers.length),
+            players: arrayUnion(...newPlayers)
         });
         
-        userWalletBalance = freshBalance - fee;
+        userWalletBalance = freshBalance - totalFee;
         document.getElementById("userWallet").textContent = userWalletBalance;
         
-        alert(`Success! Seat #${selectedSeat} booked. ₹${fee} deducted.`);
+        alert(`Success! ${selectedSeats.length} seat(s) booked. ₹${totalFee} deducted.`);
         closeModal('joinModal');
+        
+        // Reset
+        selectedSeats = [];
         
     } catch (e) {
         alert("Error: " + e.message);
+        btn.disabled = false;
+        btn.textContent = "Confirm Booking";
     }
-    
-    btn.disabled = false; btn.textContent = "Confirm Booking";
 };
 </script>
 </body>
